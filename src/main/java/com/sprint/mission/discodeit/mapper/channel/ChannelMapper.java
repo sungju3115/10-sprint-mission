@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ public class ChannelMapper {
 
     // DTO -> Entity
     public Channel toEntity(ChannelCreateRequestPublic channelCreateRequestPublic){
-        return new Channel(channelCreateRequestPublic.name(), channelCreateRequestPublic.descriptions());
+        return new Channel(channelCreateRequestPublic.name(), channelCreateRequestPublic.description());
     }
 
     // Entity -> DTO

@@ -17,8 +17,8 @@ public class BinaryContentController {
 
     // binary-Content 단건 조회 - GET /api/binaryContents/{binaryContentId}
     @GetMapping("/{binaryContentId}")
-    public ResponseEntity<BinaryContentResponse> getBinaryContent(@PathVariable UUID BinaryContentId){
-        return ResponseEntity.ok(binaryContentService.find(BinaryContentId));
+    public ResponseEntity<BinaryContentResponse> getBinaryContent(@PathVariable UUID binaryContentId){
+        return ResponseEntity.ok(binaryContentService.find(binaryContentId));
     }
 
     // binary-content 다건 조회 - GET /api/binaryContents?binaryContentIds=binaryContentId1?binaryContentId2

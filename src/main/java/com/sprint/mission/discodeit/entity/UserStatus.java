@@ -9,22 +9,22 @@ import java.util.UUID;
 @Getter
 public class UserStatus extends Base{
     private final UUID userID;
-    private Instant lastLogin;
+    private Instant lastActiveAt;
 
     public UserStatus(UUID userID) {
         super();
         this.userID = userID;
-        lastLogin = Instant.now();
+        this.lastActiveAt = Instant.now();
     }
 
-    public void updateLastLogin() {
-        lastLogin = Instant.now();
-        updateUpdatedAt();
+    public void updateLastActiveAt(Instant newLastActiveAt) {
+        this.lastActiveAt = newLastActiveAt;
     }
 
     // 5분 이내면 online
     public boolean isOnline(){
-        return lastLogin.isAfter(Instant.now().minusSeconds(300));
+        return lastActiveAt.isAfter(Instant.now().minusSeconds(300));
     }
 
 }
+

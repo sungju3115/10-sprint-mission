@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelFindResponse;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.channel.ChannelMapper;
@@ -57,7 +56,7 @@ public class BasicChannelService implements ChannelService {
         // private channel의 userList
         List<User> users = new ArrayList<>();
 
-        for (UUID id : request.participantsIds()){
+        for (UUID id : request.participantIds()){
             User user = userRepository.find(id)
                     .orElseThrow();
             users.add(user);
@@ -77,7 +76,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelFindResponse find(UUID id) {
+    public ChannelResponse find(UUID id) {
         // channel 조회
         Channel channel = channelRepository.find(id);
 
@@ -95,18 +94,23 @@ public class BasicChannelService implements ChannelService {
                     .toList();
         }
 
-        return new ChannelFindResponse(
-                channel.getId(), channel.getType(), channel.getName(), channel.getDescription(), userIDs, lastCreatedAt
+        return new ChannelResponse(
+                channel.getId(),
+                channel.getType(),
+                channel.getName(),
+                channel.getDescription(),
+                userIDs,
+                lastCreatedAt
         );
     }
 
     @Override
-    public List<ChannelFindResponse> findAllByUserID(UUID userID) {
+    public List<ChannelResponse> findAllByUserID(UUID userID) {
         // ChannelRepo channel 전체 조회
         List<Channel> channels = new ArrayList<>(channelRepository.findAll());
 
         // Channel 전체 정보 담을 List 선언
-        List<ChannelFindResponse> channelResponses = new ArrayList<>();
+        List<ChannelResponse> channelResponses = new ArrayList<>();
 
         // Channel type에 따라 channelResponses에 저장 : Public은 무조건 저장, Private은 user가 channel에 소속되어 있을 경우
         for (Channel channel : channels) {
@@ -115,28 +119,26 @@ public class BasicChannelService implements ChannelService {
             boolean isMember = channel.getMembersList().stream().anyMatch(user -> user.getId().equals(userID));
 
             if (isPublic || (isPrivate && isMember)) {
-                // channel의 가장 최근 시간
+                // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
                 Instant lastCreatedAt = channel.getMessageList().stream()
                         .map(Base::getCreatedAt)
                         .max(Instant::compareTo)
                         .orElse(null);
 
-                // public일 경우 null
                 List<UUID> userIDs = null;
-
-                // private일 경우 userIDs List 생성
-                if (channel.getType().equals("Private")) {
+                // private일 경우
+                if (channel.getType().equals("Private")){
                     userIDs = channel.getMembersList().stream()
                             .map(User::getId)
                             .toList();
                 }
 
                 channelResponses.add(
-                        new ChannelFindResponse(
+                        new ChannelResponse(
                                 channel.getId(),
                                 channel.getType(),
                                 channel.getName(),
-                                channel.getType(),
+                                channel.getDescription(),
                                 userIDs,
                                 lastCreatedAt
                         )
@@ -150,7 +152,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
-        if(request.newDescriptions().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
+        if(request.newDescription().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
 
         // [저장] , 조회
         Channel channel = channelRepository.find(channelID);

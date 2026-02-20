@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelFindResponse;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
 import org.springframework.http.HttpStatus;
@@ -37,14 +36,14 @@ public class ChannelController {
 
     // Channel 단건 조회 - GET /api/channels/{channelId} (201 Created)
     @GetMapping("/{channelId}")
-    public ChannelFindResponse getChannel(@PathVariable UUID channelId){
+    public ChannelResponse getChannel(@PathVariable UUID channelId){
         return channelService.find(channelId);
     }
 
     // User가 참여 중인 Channel 목록 조회 - GET /api/channels?userID=userId
     @GetMapping
-    public List<ChannelFindResponse> getAllChannels(@RequestParam UUID userID){
-        return channelService.findAllByUserID(userID);
+    public List<ChannelResponse> getAllChannels(@RequestParam UUID userId){
+        return channelService.findAllByUserID(userId);
     }
 
     // 채널 수정 - PATCH /api/channels/{channelId} (200 OK)

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.channels.MulticastChannel;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -97,7 +95,7 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
         // user 이름 선택적 업데이트
-        Optional.ofNullable(request.newUserName()).ifPresent(name -> {
+        Optional.ofNullable(request.newUsername()).ifPresent(name -> {
             validateName(name);
             user.updateName(name);
         });
@@ -129,8 +127,6 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserID(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
 
-        userStatus.updateLastLogin();
-
         User savedUser = userRepository.save(user);
 
         Set<UUID> channelIDs = new HashSet<>();
@@ -138,8 +134,8 @@ public class BasicUserService implements UserService {
         for (Channel channel : user.getChannelsList()) {
             for (User u : channel.getMembersList()) {
                 if (u.getId().equals(userID)) {
-                    u.updateName(request.newUserName());
-                    u.updateProfileImageID(savedUser.getProfileImageID());
+                    u.updateName(request.newUsername());
+                    u.updateProfileImageID(savedUser.getProfileImageId());
                     channelIDs.add(channel.getId());
                 }
             }
@@ -153,8 +149,8 @@ public class BasicUserService implements UserService {
         // message의 sender 이름 변경, Message Entity는 업데이트 필요없지 않나??
         Set<UUID> messageIDs = new HashSet<>();
         for (Message message : user.getMessageList()) {
-            message.getSender().updateName(request.newUserName());
-            message.getSender().updateProfileImageID(savedUser.getProfileImageID());
+            message.getSender().updateName(request.newUsername());
+            message.getSender().updateProfileImageID(savedUser.getProfileImageId());
             messageIDs.add(message.getId());
         }
 
@@ -200,8 +196,8 @@ public class BasicUserService implements UserService {
         userStatusRepository.deleteUserStatus(userStatus.getId());
 
         // binaryContentRepo에서 삭제
-        if(user.getProfileImageID() != null){
-            binaryContentRepository.delete(user.getProfileImageID());
+        if(user.getProfileImageId() != null){
+            binaryContentRepository.delete(user.getProfileImageId());
         }
         // [저장]
         userRepository.deleteUser(user);

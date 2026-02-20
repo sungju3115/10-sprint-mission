@@ -18,15 +18,15 @@ public class User extends Base  {
     @Getter
     private String password;
     @Getter
-    private UUID profileImageID;
+    private UUID profileImageId;
 
     // 생성자
-    public User(String name, String email, String password, UUID profileImageID) {
+    public User(String name, String email, String password, UUID profileImageId) {
         super();
         this.name = name;
         this.email = email;
         this.password = password;
-        this.profileImageID = profileImageID;
+        this.profileImageId = profileImageId;
         this.channelsList = new ArrayList<>();
         this.messageList = new ArrayList<Message>();
     }
@@ -43,7 +43,7 @@ public class User extends Base  {
         this.password = password;
     }
     public void updateProfileImageID(UUID profileImageID) {
-        this.profileImageID = profileImageID;
+        this.profileImageId = profileImageID;
     }
 
     // other

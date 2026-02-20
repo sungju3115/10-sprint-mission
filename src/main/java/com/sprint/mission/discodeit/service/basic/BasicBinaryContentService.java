@@ -20,15 +20,28 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentResponse create(BinaryContentCreateRequest request) {
         BinaryContent binaryContent = new BinaryContent(request.fileName(), request.content(), request.contentType());
-        BinaryContent newBinaryContent = binaryContentRepository.save(binaryContent);
-        return new BinaryContentResponse(newBinaryContent.getId(), newBinaryContent.getData(), newBinaryContent.getContentType());
+        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        return new BinaryContentResponse(
+                savedBinaryContent.getId(),
+                savedBinaryContent.getCreatedAt(),
+                savedBinaryContent.getFileName(),
+                savedBinaryContent.getData().length,
+                savedBinaryContent.getContentType(),
+                savedBinaryContent.getData());
     }
 
     @Override
     public BinaryContentResponse find(UUID contentID) {
         BinaryContent binaryContent = binaryContentRepository.find(contentID)
                 .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
-        return new BinaryContentResponse(binaryContent.getId(), binaryContent.getData(), binaryContent.getContentType());
+        return new BinaryContentResponse(
+                binaryContent.getId(),
+                binaryContent.getCreatedAt(),
+                binaryContent.getFileName(),
+                binaryContent.getData().length,
+                binaryContent.getContentType(),
+                binaryContent.getData()
+        );
     }
 
     @Override
@@ -48,8 +61,11 @@ public class BasicBinaryContentService implements BinaryContentService {
         return contents.stream()
                 .map(ct -> new BinaryContentResponse(
                         ct.getId(),
-                        ct.getData(),
-                        ct.getContentType()
+                        ct.getCreatedAt(),
+                        ct.getFileName(),
+                        ct.getData().length,
+                        ct.getContentType(),
+                        ct.getData()
                 ))
                 .toList();
     }

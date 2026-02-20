@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -30,7 +31,7 @@ public class UserController {
     // user 등록 - POST /api/users
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse postUser(@RequestPart UserCreateRequest request,
+    public UserResponse postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
                                  @RequestPart(value="profile", required = false) MultipartFile profile){
         return userService.create(request, Optional.ofNullable(profile));
     }
@@ -65,8 +66,9 @@ public class UserController {
 
     // user 온라인 상태 업데이트 - PATCH /api/users/{userId}/userStatus
     @PatchMapping( "/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponse> updateStatus(@PathVariable UUID userId){
-        return ResponseEntity.ok(userStatusService.updateByUserID(userId));
+    public ResponseEntity<UserStatusResponse> updateStatus(@PathVariable UUID userId,
+                                                           @RequestBody UserStatusUpdateRequest request){
+        return ResponseEntity.ok(userStatusService.updateByUserID(userId, request));
     }
 
 }

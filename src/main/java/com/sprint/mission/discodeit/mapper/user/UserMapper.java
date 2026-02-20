@@ -18,15 +18,15 @@ public class UserMapper {
                 user.getUpdatedAt(),
                 user.getName(),
                 user.getEmail(),
-                user.getProfileImageID(),
-                userStatus.isOnline()
+                user.getPassword(),
+                user.getProfileImageId()
         );
     }
 
     // DTO -> Entity
     public User toEntity(UserCreateRequest request, UUID profileImageID){
         return new User(
-                request.name(),
+                request.username(),
                 request.email(),
                 request.password(),
                 profileImageID
