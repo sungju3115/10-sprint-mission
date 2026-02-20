@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreat
 import java.util.List;
 
 public record MessageUpdateRequest(
-        String content,
+        String newContent,
         List<BinaryContentCreateRequest> attachments
 ) {
 }

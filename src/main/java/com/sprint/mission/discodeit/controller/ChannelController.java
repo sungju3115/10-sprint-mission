@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelFindResponse;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,40 +21,43 @@ public class ChannelController {
         this.channelService = channelService;
     }
 
-    // public Channel 생성
-    @RequestMapping(value = "/public", method=RequestMethod.POST)
+    // public Channel 생성 - POST /api/channels/public
+    @PostMapping("/public")
+    @ResponseStatus(HttpStatus.CREATED)
     public ChannelResponse postPublicChannel(@RequestBody ChannelCreateRequestPublic request){
         return channelService.createPublic(request);
     }
 
-    // private Channel 생성
-    @RequestMapping(value="/private", method=RequestMethod.POST)
+    // private Channel 생성 - POST /api/channels/private
+    @PostMapping("/private")
+    @ResponseStatus(HttpStatus.CREATED)
     public ChannelResponse postPrivateChannel(@RequestBody ChannelCreateRequestPrivate request){
         return channelService.createPrivate(request);
     }
 
-    // Channel 단건 조회
-    @RequestMapping(value="/{channel-id}", method=RequestMethod.GET)
-    public ChannelFindResponse getChannel(@PathVariable("channel-id") UUID channelID){
-        return channelService.find(channelID);
+    // Channel 단건 조회 - GET /api/channels/{channelId} (201 Created)
+    @GetMapping("/{channelId}")
+    public ChannelFindResponse getChannel(@PathVariable UUID channelId){
+        return channelService.find(channelId);
     }
 
-    // User 별 Channel 다건 조회 by user
-    @RequestMapping(method=RequestMethod.GET)
-    public List<ChannelFindResponse> getAllChannels(@RequestParam("userID") UUID userID){
+    // User가 참여 중인 Channel 목록 조회 - GET /api/channels?userID=userId
+    @GetMapping
+    public List<ChannelFindResponse> getAllChannels(@RequestParam UUID userID){
         return channelService.findAllByUserID(userID);
     }
 
-    // public Channel 수정
-    @RequestMapping(value="/{channel-id}",method=RequestMethod.PATCH)
-    public ChannelResponse updateChannel(@PathVariable("channel-id") UUID channelID,
+    // 채널 수정 - PATCH /api/channels/{channelId} (200 OK)
+    @PatchMapping("/{channelId}")
+    public ChannelResponse updateChannel(@PathVariable UUID channelId,
                                          @RequestBody ChannelUpdateRequest request){
-        return channelService.updateName(channelID, request);
+        return channelService.updateName(channelId, request);
     }
 
-    // Channel 삭제
-    @RequestMapping(value="/{channel-id}", method=RequestMethod.DELETE)
-    public void deleteChannel(@PathVariable("channel-id") UUID channelID){
-        channelService.deleteChannel(channelID);
+    // 채널 삭제 - DELETE /api/channels/{channelId}
+    @DeleteMapping("/{channelId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteChannel(@PathVariable UUID channelId){
+        channelService.deleteChannel(channelId);
     }
 }

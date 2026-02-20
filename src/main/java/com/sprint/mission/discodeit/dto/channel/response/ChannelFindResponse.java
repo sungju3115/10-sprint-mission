@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelFindResponse(
-    UUID channelId,
+    UUID id,
+    String type,
     String name,
     String descriptions,
-    Instant lastMessageTime,
-    List<UUID> userIds
+    List<UUID> participantsIds,
+    Instant lastMessageAt
 ) {}

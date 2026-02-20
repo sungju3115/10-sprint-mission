@@ -10,7 +10,10 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.channels.MulticastChannel;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -27,20 +30,24 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponse create(UserCreateRequest userRequest, Optional<BinaryContentCreateRequest> profileRequest) {
+    public UserResponse create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.name());
         validateEmail(userRequest.email());
 
         // 선택적으로 프로필 등록
-        UUID profileImageID = profileRequest
-                .map(pr -> {
-                    BinaryContent profile = new BinaryContent(
-                            pr.fileName(),
-                            pr.content(),
-                            pr.contentType()
+        UUID profileImageID = profile
+                .map(file -> {
+                 try{
+                    BinaryContent bc = new BinaryContent(
+                         file.getOriginalFilename(),
+                         file.getBytes(),
+                         file.getContentType()
                     );
-                    return binaryContentRepository.save(profile).getId();
+                    return binaryContentRepository.save(bc).getId();
+                 } catch (IOException e){
+                     throw new RuntimeException("파일 처리 실패" + e.getMessage());
+                 }
                 })
                 .orElse(null);
 
@@ -84,7 +91,7 @@ public class BasicUserService implements UserService {
     // 이름. 프로필 선택적 업데이트
     // 업데이트 원하지 않는 경우 null을 전달하는게 맞나??
     @Override
-    public UserResponse update(UUID userID, UserUpdateRequest request, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    public UserResponse update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         // user 조회
         User user = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
@@ -102,10 +109,18 @@ public class BasicUserService implements UserService {
         });
 
         // user의 프로필 선택적 업데이트
-        UUID profileID = optionalProfileCreateRequest
-                .map(pr ->{
-                    BinaryContent profile = new BinaryContent(pr.fileName(), pr.content(), pr.contentType());
-                    return binaryContentRepository.save(profile).getId();
+        UUID profileID = profile
+                .map(file -> {
+                    try{
+                        BinaryContent bc = new BinaryContent(
+                                file.getOriginalFilename(),
+                                file.getBytes(),
+                                file.getContentType()
+                        );
+                        return binaryContentRepository.save(bc).getId();
+                    } catch (IOException e){
+                        throw new RuntimeException("파일 처리 실패" + e.getMessage());
+                    }
                 })
                 .orElse(null);
 

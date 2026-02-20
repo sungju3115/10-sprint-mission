@@ -6,15 +6,18 @@ import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
@@ -24,42 +27,46 @@ public class UserController {
         this.userStatusService = userStatusService;
     }
 
-    // user 등록
-    @RequestMapping(method = RequestMethod.POST)
-    public UserResponse postUser(@RequestBody UserCreateRequest request){
-        return userService.create(request, Optional.ofNullable(request.profileImage()));
+    // user 등록 - POST /api/users
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse postUser(@RequestPart UserCreateRequest request,
+                                 @RequestPart(value="profile", required = false) MultipartFile profile){
+        return userService.create(request, Optional.ofNullable(profile));
     }
 
-    // user 정보 수정
-    @RequestMapping(value="/{user-id}",method = RequestMethod.PATCH)
-    public UserResponse updateUser(@PathVariable("user-id") UUID userID,
-                                   @RequestBody UserUpdateRequest request){
-        return userService.update(userID, request, Optional.ofNullable(request.profileImage()));
+    // user 정보 수정 - PATCH /api/users/{userId}
+    @PatchMapping(value="/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserResponse updateUser(@PathVariable UUID userId,
+                                   @RequestPart("userUpdateRequest") UserUpdateRequest request,
+                                   @RequestPart(value="profile", required = false) MultipartFile profile){
+        return userService.update(userId, request, Optional.ofNullable(profile));
     }
 
-    // user 삭제
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{user-id}")
-    public void deleteUser(@PathVariable("user-id") UUID userID){
-        userService.deleteUser(userID);
+    // user 삭제 - DELETE /api/users/{userId}
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable UUID userId){
+        userService.deleteUser(userId);
     }
 
     // user 단건 조회
-    @RequestMapping(method = RequestMethod.GET, value = "/{user-id}")
-    public UserResponse getUser(@PathVariable("user-id") UUID userID){
-        return userService.find(userID);
+    @GetMapping("/{userId}")
+    public UserResponse getUser(@PathVariable UUID userId){
+        return userService.find(userId);
     }
 
-    // user 다건 조회
-    @RequestMapping(value="/findAll", method = RequestMethod.GET)
+    // user 다건 조회 - GET /api/users
+    @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers(){
         List<UserResponse> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
-    // user status 업데이트
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}/status")
-    public UserStatusResponse updateStatus(@PathVariable("user-id") UUID userID){
-        return userStatusService.updateByUserID(userID);
+    // user 온라인 상태 업데이트 - PATCH /api/users/{userId}/userStatus
+    @PatchMapping( "/{userId}/userStatus")
+    public ResponseEntity<UserStatusResponse> updateStatus(@PathVariable UUID userId){
+        return ResponseEntity.ok(userStatusService.updateByUserID(userId));
     }
 
 }

@@ -11,24 +11,28 @@ import java.util.*;
 public class Channel extends Base  {
     // 필드
     private String name;
+    private String description;
+    private final String type;
     private final List<User> membersList;
     private final List<Message> messageList;
-    private final String descriptions;
 
     // 생성자
-    public Channel(String name) {
+    public Channel(String name, String description) {
         super();
         this.name = name;
+        this.description = description;
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
-        this.descriptions = "Public";
+        this.type = "Public";
     }
 
     public Channel(){
         super();
+        this.name = null;
+        this.description = null;
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
-        this.descriptions = "Private";
+        this.type = "Private";
     }
 
     // setter
