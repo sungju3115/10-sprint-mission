@@ -30,7 +30,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponse create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
-        validateName(userRequest.name());
+        validateName(userRequest.username());
         validateEmail(userRequest.email());
 
         // 선택적으로 프로필 등록

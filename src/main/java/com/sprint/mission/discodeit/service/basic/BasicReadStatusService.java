@@ -22,7 +22,13 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusResponse create(ReadStatusCreateRequest request){
         ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
         ReadStatus newReadStatus = readStatusRepository.save(readStatus);
-        return new ReadStatusResponse(newReadStatus.getId(), newReadStatus.getLastReadTime());
+        return new ReadStatusResponse(
+                newReadStatus.getId(),
+                newReadStatus.getCreatedAt(),
+                newReadStatus.getUpdatedAt(),
+                newReadStatus.getUserID(),
+                newReadStatus.getChannelID(),
+                newReadStatus.getLastReadTime());
     }
 
     @Override
@@ -30,7 +36,14 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.find(readStatusID)
                 .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusID));
 
-        return new ReadStatusResponse(readStatus.getId(), readStatus.getLastReadTime());
+        return new ReadStatusResponse(
+                readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
+                readStatus.getUserID(),
+                readStatus.getChannelID(),
+                readStatus.getLastReadTime()
+        );
     }
 
     @Override
@@ -38,6 +51,10 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusRepository.findByUserID(userID).stream()
                 .map(rs -> new ReadStatusResponse(
                         rs.getId(),
+                        rs.getCreatedAt(),
+                        rs.getUpdatedAt(),
+                        rs.getUserID(),
+                        rs.getChannelID(),
                         rs.getLastReadTime()
                 ))
                 .toList();
@@ -51,7 +68,13 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatus.updateLastReadTime();
         ReadStatus newReadStatus = readStatusRepository.save(readStatus);
 
-        return new ReadStatusResponse(newReadStatus.getId(), newReadStatus.getLastReadTime());
+        return new ReadStatusResponse(
+                newReadStatus.getId(),
+                newReadStatus.getCreatedAt(),
+                newReadStatus.getUpdatedAt(),
+                newReadStatus.getUserID(),
+                newReadStatus.getChannelID(),
+                newReadStatus.getLastReadTime());
     }
 
     @Override
