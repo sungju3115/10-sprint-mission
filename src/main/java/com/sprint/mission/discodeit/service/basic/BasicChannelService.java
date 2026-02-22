@@ -96,6 +96,8 @@ public class BasicChannelService implements ChannelService {
 
         return new ChannelResponse(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
@@ -136,6 +138,8 @@ public class BasicChannelService implements ChannelService {
                 channelResponses.add(
                         new ChannelResponse(
                                 channel.getId(),
+                                channel.getCreatedAt(),
+                                channel.getUpdatedAt(),
                                 channel.getType(),
                                 channel.getName(),
                                 channel.getDescription(),
@@ -152,7 +156,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
-        if(request.newDescription().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
+        Channel ch = channelRepository.find(channelID);
+        if(ch.getType().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
 
         // [저장] , 조회
         Channel channel = channelRepository.find(channelID);

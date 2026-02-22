@@ -6,3 +6,14 @@ discodeit:
   repository:
     type: file        # jcf, file
     path: data
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+  packages-to-scan: com.sprint.mission.discodeit.controller
+
+logging:
+  level:
+    org.springdoc: DEBUG
