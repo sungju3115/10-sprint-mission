@@ -16,6 +16,7 @@ public class AuthMapper {
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getProfileImageId()
+                user.getProfileImageId(),
+                status.isOnline()
         );}
 }

@@ -20,85 +20,90 @@ import java.util.UUID;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileChannelRepository implements ChannelRepository {
-    // 필드
-    private final Path STORE_FILE;
-    private List<Channel> channelData;
+
+    private final Path BASE_PATH;
 
     public FileChannelRepository(@Value("${discodeit.repository.path}") String directoryPath) {
-        Path BASE_PATH = Path.of(directoryPath).resolve("channel");
-
-        this.STORE_FILE = BASE_PATH.resolve("channel.ser");
+        // 채널 전용 폴더 경로 설정
+        this.BASE_PATH = Path.of(directoryPath).resolve("channel");
         init(BASE_PATH);
-        loadData();
     }
 
-    private void init(Path BASE_PATH) {
-        try{
-            if(!Files.exists(BASE_PATH)) {
-                Files.createDirectories(BASE_PATH);
+    private void init(Path path) {
+        try {
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
             }
-        } catch(Exception e) {
-            System.out.println("Directory creation failed." + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Directory creation failed: " + e.getMessage());
         }
     }
 
-    private void loadData() {
-        if(!Files.exists(STORE_FILE)) {
-            channelData = new ArrayList<>();
-            return;
-        }
+    // 파일 경로를 생성하는 헬퍼 메서드
+    private Path getFilePath(UUID id) {
+        return BASE_PATH.resolve(id.toString() + ".ser");
+    }
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
-            channelData = (List<Channel>) ois.readObject();
-        } catch (Exception e){
-            throw new RuntimeException("Data load failed." + e.getMessage());
+    // 단일 파일을 로드하는 메서드 (기존 loadData 대체)
+    private Channel loadOne(UUID id) {
+        Path filePath = getFilePath(id);
+        if (!Files.exists(filePath)) return null;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
+            return (Channel) ois.readObject();
+        } catch (Exception e) {
+            return null;
         }
     }
 
-    private void saveData() {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))){
-            oos.writeObject(channelData);
-        } catch (Exception e){
-            throw new RuntimeException("Data save failed." + e.getMessage());
+    // 단일 파일을 저장하는 메서드 (기존 saveData 대체)
+    private void saveOne(Channel channel) {
+        Path filePath = getFilePath(channel.getId());
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+            oos.writeObject(channel);
+        } catch (Exception e) {
+            throw new RuntimeException("Data save failed: " + e.getMessage());
         }
     }
 
     @Override
     public Channel find(UUID channelID) {
-        loadData();
-        return channelData.stream()
-                .filter(channel -> channel.getId().equals(channelID))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
+        Channel channel = loadOne(channelID);
+        if (channel == null) {
+            throw new IllegalArgumentException("Channel not found: " + channelID);
+        }
+        return channel;
     }
 
     @Override
     public List<Channel> findAll() {
-        loadData();
-        return new ArrayList<>(channelData);
+        List<Channel> channels = new ArrayList<>();
+        try (var files = Files.list(BASE_PATH)) {
+            files.filter(path -> path.toString().endsWith(".ser"))
+                    .forEach(path -> {
+                        // 파일 이름에서 UUID 추출 (옵션) 혹은 그냥 로드
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                            channels.add((Channel) ois.readObject());
+                        } catch (Exception ignored) {}
+                    });
+        } catch (Exception e) {
+            System.out.println("FindAll failed: " + e.getMessage());
+        }
+        return channels;
     }
 
     @Override
     public void deleteChannel(UUID channelID) {
-        loadData();
-        channelData.removeIf(ch -> ch.getId().equals(channelID));
-        saveData();
+        try {
+            Files.deleteIfExists(getFilePath(channelID));
+        } catch (Exception e) {
+            throw new RuntimeException("Delete failed: " + e.getMessage());
+        }
     }
 
     @Override
-    public Channel save(Channel channel){
-        loadData();
-        // 덮어 씌우는 구조
-        for(int i=0; i<channelData.size(); i++){
-            if(channelData.get(i).getId().equals(channel.getId())){
-                channelData.set(i, channel);
-                saveData();
-                return channel;
-            }
-        }
-        // 없으면 추가
-        channelData.add(channel);
-        saveData();
+    public Channel save(Channel channel) {
+        saveOne(channel);
         return channel;
     }
 }

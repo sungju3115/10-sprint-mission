@@ -17,91 +17,83 @@ import java.util.UUID;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserRepository implements UserRepository {
-    private final Path STORE_FILE;
 
-    private List<User> userData;
+    private final Path BASE_PATH;
 
-    // constructor
     public FileUserRepository(@Value("${discodeit.repository.path}") String directoryPath) {
-        Path BASE_PATH = Path.of(directoryPath).resolve("user");
-        this.STORE_FILE = BASE_PATH.resolve("user.ser");
+        // user 전용 폴더 경로 설정
+        this.BASE_PATH = Path.of(directoryPath).resolve("user");
         init(BASE_PATH);
-        loadData();
     }
 
-    // 디렉토리 체크
-    private void init(Path BASE_PATH) {
+    private void init(Path path) {
         try {
-            if (!Files.exists(BASE_PATH)) {
-                Files.createDirectories(BASE_PATH);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
             }
         } catch (IOException e) {
-            System.out.println("Directory creation failed." + e.getMessage());
+            System.out.println("Directory creation failed: " + e.getMessage());
         }
     }
 
-    // 저장 (직렬화)
-    void saveData() {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))) {
-
-            oos.writeObject(userData);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException("Data save failed." + e.getMessage());
-
-        }
+    // 파일 경로를 생성하는 헬퍼 메서드
+    private Path getFilePath(UUID id) {
+        return BASE_PATH.resolve(id.toString() + ".ser");
     }
 
-    // 로드 (역직렬화)
-    void loadData() {
-        // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
-        if (!Files.exists(STORE_FILE)) {
-            userData = new ArrayList<>();
-            return;
-        }
+    // 단일 파일을 로드하는 메서드
+    private User loadOne(UUID id) {
+        Path filePath = getFilePath(id);
+        if (!Files.exists(filePath)) return null;
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
-            userData = (List<User>) ois.readObject();
-        } catch (Exception e){
-            throw new RuntimeException("Data load failed." + e.getMessage());
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
+            return (User) ois.readObject();
+        } catch (Exception e) {
+            return null;
         }
     }
-
 
     @Override
     public Optional<User> find(UUID userID) {
-        loadData();
-        return userData.stream()
-                .filter(user -> user.getId().equals(userID))
-                .findFirst();
+        // 매번 리스트 로드 없이 특정 유저 파일만 확인
+        return Optional.ofNullable(loadOne(userID));
     }
 
     @Override
     public List<User> findAll() {
-        loadData();
-        return new ArrayList<>(userData);
+        List<User> users = new ArrayList<>();
+        try (var files = Files.list(BASE_PATH)) {
+            files.filter(path -> path.toString().endsWith(".ser"))
+                    .forEach(path -> {
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                            users.add((User) ois.readObject());
+                        } catch (Exception ignored) {}
+                    });
+        } catch (IOException e) {
+            System.out.println("FindAll failed: " + e.getMessage());
+        }
+        return users;
     }
 
     @Override
     public void deleteUser(User user) {
-        loadData();
-        userData.removeIf(u -> u.getId().equals(user.getId()));
-        saveData();
+        try {
+            // 유저 객체에서 ID를 추출하여 파일 삭제
+            Files.deleteIfExists(getFilePath(user.getId()));
+        } catch (IOException e) {
+            throw new RuntimeException("Delete failed: " + e.getMessage());
+        }
     }
 
     @Override
-    public User save(User user){
-        loadData();
-        for (int i = 0; i < userData.size(); i++){
-            if(userData.get(i).getId().equals(user.getId())){
-                userData.set(i, user);
-                saveData();
-                return user;
-            }
+    public User save(User user) {
+        Path filePath = getFilePath(user.getId());
+        // 리스트를 돌면서 덮어씌울 필요 없이 바로 파일 저장 (UUID가 같으면 덮어쓰기됨)
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+            oos.writeObject(user);
+            return user;
+        } catch (IOException e) {
+            throw new RuntimeException("Data save failed: " + e.getMessage());
         }
-        userData.add(user);
-        saveData();
-        return user;
     }
 }
