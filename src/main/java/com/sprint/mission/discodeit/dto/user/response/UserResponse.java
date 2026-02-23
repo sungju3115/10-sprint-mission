@@ -10,6 +10,7 @@ public record UserResponse(
         String username,
         String email,
         String password,
-        UUID profileId
+        UUID profileId,
+        boolean online
 
 ) {}

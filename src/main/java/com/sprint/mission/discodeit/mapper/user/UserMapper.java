@@ -19,7 +19,8 @@ public class UserMapper {
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getProfileImageId()
+                user.getProfileImageId(),
+                userStatus.isOnline()
         );
     }
 
