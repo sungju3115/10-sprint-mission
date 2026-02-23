@@ -23,7 +23,7 @@ public class Channel extends Base  {
         this.description = description;
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
-        this.type = "Public";
+        this.type = "PUBLIC";
     }
 
     public Channel(){
@@ -32,7 +32,7 @@ public class Channel extends Base  {
         this.description = null;
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
-        this.type = "Private";
+        this.type = "PRIVATE";
     }
 
     // setter

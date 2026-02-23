@@ -21,6 +21,15 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusResponse create(UserStatusCreateRequest request) {
+        // userId의 user 존재 여부 검증
+        if (userRepository.find(request.userID()).isEmpty()) {
+            throw new IllegalArgumentException("User not found: " + request.userID());
+        }
+
+        // 같은 userId에 대한 UserStatus 중복 생성 방지
+        if (userStatusRepository.findByUserID(request.userID()).isPresent()) {
+            return find(request.userID());
+        }
         UserStatus userStatus = new UserStatus(request.userID());
         UserStatus savedUserStatus = userStatusRepository.save(userStatus);
         return new UserStatusResponse(

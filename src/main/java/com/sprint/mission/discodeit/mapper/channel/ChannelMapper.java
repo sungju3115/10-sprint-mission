@@ -25,11 +25,11 @@ public class ChannelMapper {
         Instant lastMessageAt = channel.getMessageList().stream().map(message -> message.getCreatedAt()).max(Instant::compareTo).orElse(null);
         return new ChannelResponse(
                 channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 participantsIds,
                 lastMessageAt
         );}

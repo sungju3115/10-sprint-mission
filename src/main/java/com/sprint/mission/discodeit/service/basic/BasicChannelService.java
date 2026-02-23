@@ -34,7 +34,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
-                .filter(ch -> "Public".equals(ch.getType()))
+                .filter(ch -> "PUBLIC".equals(ch.getType()))
                 .filter(ch -> ch.getName().equals(request.name()))
                 .findFirst()
                 .ifPresent(ch -> {
@@ -66,7 +66,7 @@ public class BasicChannelService implements ChannelService {
 
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
         for(User user : users) {
-            ReadStatus status = new ReadStatus(channel.getId(), user.getId());
+            ReadStatus status = new ReadStatus(user.getId(), channel.getId());
             ReadStatusRepository.save(status);
         }
 
@@ -88,7 +88,7 @@ public class BasicChannelService implements ChannelService {
 
         List<UUID> userIDs = null;
         // private일 경우
-        if (channel.getType().equals("Private")){
+        if (channel.getType().equals("PRIVATE")){
             userIDs = channel.getMembersList().stream()
                     .map(User::getId)
                     .toList();
@@ -96,11 +96,11 @@ public class BasicChannelService implements ChannelService {
 
         return new ChannelResponse(
                 channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 userIDs,
                 lastCreatedAt
         );
@@ -116,8 +116,8 @@ public class BasicChannelService implements ChannelService {
 
         // Channel type에 따라 channelResponses에 저장 : Public은 무조건 저장, Private은 user가 channel에 소속되어 있을 경우
         for (Channel channel : channels) {
-            boolean isPublic = channel.getType().equals("Public");
-            boolean isPrivate = channel.getType().equals("Private");
+            boolean isPublic = channel.getType().equals("PUBLIC");
+            boolean isPrivate = channel.getType().equals("PRIVATE");
             boolean isMember = channel.getMembersList().stream().anyMatch(user -> user.getId().equals(userID));
 
             if (isPublic || (isPrivate && isMember)) {
@@ -129,7 +129,7 @@ public class BasicChannelService implements ChannelService {
 
                 List<UUID> userIDs = null;
                 // private일 경우
-                if (channel.getType().equals("Private")){
+                if (channel.getType().equals("PRIVATE")){
                     userIDs = channel.getMembersList().stream()
                             .map(User::getId)
                             .toList();
@@ -138,11 +138,11 @@ public class BasicChannelService implements ChannelService {
                 channelResponses.add(
                         new ChannelResponse(
                                 channel.getId(),
-                                channel.getCreatedAt(),
-                                channel.getUpdatedAt(),
                                 channel.getType(),
                                 channel.getName(),
                                 channel.getDescription(),
+                                channel.getCreatedAt(),
+                                channel.getUpdatedAt(),
                                 userIDs,
                                 lastCreatedAt
                         )
@@ -157,7 +157,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
         Channel ch = channelRepository.find(channelID);
-        if(ch.getType().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
+        if(ch.getType().equals("PRIVATE")) throw new IllegalArgumentException("Private Channel cannot be updated");
 
         // [저장] , 조회
         Channel channel = channelRepository.find(channelID);
@@ -242,7 +242,7 @@ public class BasicChannelService implements ChannelService {
         user.joinChannel(channel);
 
         // ReadStatus 생성 및 저장
-        ReadStatus readStatus = new ReadStatus(channelID, userID);
+        ReadStatus readStatus = new ReadStatus(userID, channelID);
         ReadStatusRepository.save(readStatus);
 
         // [저장], 변경사항 저장
@@ -295,7 +295,7 @@ public class BasicChannelService implements ChannelService {
 
     public void isPublic(UUID channelID) {
         Channel channel = channelRepository.find(channelID);
-        if(channel.getType().equals("Public")) {
+        if(channel.getType().equals("PUBLIC")) {
             return;
         } else {
             throw new IllegalArgumentException("Not Public Channel");

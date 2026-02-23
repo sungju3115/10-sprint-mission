@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: discodeit
+
+discodeit:
+  repository:
+    type: file        # jcf, file
+    path: data
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    # 아래 설정은 스웨거 화면이 잘 나오게 도와줍니다
+    display-request-duration: true
+    groups-order: DESC
+    default-consumes-media-type: multipart/form-data
+  # 특정 패키지만 스캔하고 싶다면 아래 주석을 풀고 '정확한' 경로를 입력하세요.
+  # packages-to-scan: com.sprint.mission.discodeit.controller
+
+logging:
+  level:
+    org.springdoc: DEBUG
