@@ -21,16 +21,38 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusResponse create(UserStatusCreateRequest request) {
+        // userId의 user 존재 여부 검증
+        if (userRepository.find(request.userID()).isEmpty()) {
+            throw new IllegalArgumentException("User not found: " + request.userID());
+        }
+
+        // 같은 userId에 대한 UserStatus 중복 생성 방지
+        if (userStatusRepository.findByUserID(request.userID()).isPresent()) {
+            return find(request.userID());
+        }
         UserStatus userStatus = new UserStatus(request.userID());
-        UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+        UserStatus savedUserStatus = userStatusRepository.save(userStatus);
+        return new UserStatusResponse(
+                savedUserStatus.getId(),
+                savedUserStatus.getCreatedAt(),
+                savedUserStatus.getUpdatedAt(),
+                savedUserStatus.getUserID(),
+                savedUserStatus.getLastActiveAt(),
+                savedUserStatus.isOnline());
     }
 
     @Override
-    public UserStatusResponse find(UUID userID){
-        UserStatus userStatus = userStatusRepository.findByUserID(userID)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userID));
-        return new UserStatusResponse(userStatus.getUserID(), userStatus.isOnline());
+    public UserStatusResponse find(UUID userId){
+        UserStatus userStatus = userStatusRepository.findByUserID(userId)
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
+        return new UserStatusResponse(
+                userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
+                userStatus.getUserID(),
+                userStatus.getLastActiveAt(),
+                userStatus.isOnline()
+        );
     }
 
     @Override
@@ -38,32 +60,42 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findAll().stream()
                 .map(us -> new UserStatusResponse(
                         us.getId(),
+                        us.getCreatedAt(),
+                        us.getUpdatedAt(),
+                        us.getUserID(),
+                        us.getLastActiveAt(),
                         us.isOnline()
                 )).toList();
     }
 
-    @Override
-    public UserStatusResponse update(UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.find(request.userID())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userID()));
-        userStatus.updateLastLogin();
-        UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
-    }
+//    @Override
+//    public UserStatusResponse update(UserStatusUpdateRequest request) {
+//        UserStatus userStatus = userStatusRepository.find(request.userID())
+//                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userID()));
+//        userStatus.updateLastLogin();
+//        UserStatus newUserStatus = userStatusRepository.save(userStatus);
+//        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+//    }
 
     @Override
-    public UserStatusResponse updateByUserID(UUID userID) {
+    public UserStatusResponse updateByUserID(UUID userID, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserID(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
-        userStatus.updateLastLogin();
-        UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+        userStatus.updateLastActiveAt(request.newLastActiveAt());
+        UserStatus savedUserStatus = userStatusRepository.save(userStatus);
+        return new UserStatusResponse(
+                savedUserStatus.getId(),
+                savedUserStatus.getCreatedAt(),
+                savedUserStatus.getUpdatedAt(),
+                savedUserStatus.getUserID(),
+                savedUserStatus.getLastActiveAt(),
+                savedUserStatus.isOnline());
     }
 
     @Override
-    public void delete(UUID userStatusID) {
-        UserStatus userStatus = userStatusRepository.find(userStatusID)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userStatusID));
+    public void delete(UUID userStatusId) {
+        UserStatus userStatus = userStatusRepository.find(userStatusId)
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userStatusId));
         userStatusRepository.deleteUserStatus(userStatus.getId());
     }
 }

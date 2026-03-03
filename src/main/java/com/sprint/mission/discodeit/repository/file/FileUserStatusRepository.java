@@ -18,88 +18,101 @@ import java.util.UUID;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserStatusRepository implements UserStatusRepository {
-    // 필드
-    private final Path STORE_FILE;
-    private List<UserStatus> userStatusData;
+
+    private final Path BASE_PATH;
 
     public FileUserStatusRepository(@Value("${discodeit.repository.path}") String directoryPath) {
-        Path BASE_PATH = Path.of(directoryPath).resolve("userStatus");
-        this.STORE_FILE = BASE_PATH.resolve("userStatus.ser");
+        // userStatus 전용 폴더 경로 설정
+        this.BASE_PATH = Path.of(directoryPath).resolve("userStatus");
         init(BASE_PATH);
-        loadData();
     }
 
-    private void init(Path BASE_PATH) {
+    private void init(Path path) {
         try {
-            if (!Files.exists(BASE_PATH)) {
-                Files.createDirectories(BASE_PATH);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
             }
         } catch (IOException e) {
-            System.out.println("Directory creation failed." + e.getMessage());
+            System.out.println("Directory creation failed: " + e.getMessage());
         }
     }
 
-    private void loadData(){
-        if(!Files.exists(STORE_FILE)){
-            userStatusData = new ArrayList<>();
-            return;
-        }
+    // 파일 경로를 생성하는 헬퍼 메서드
+    private Path getFilePath(UUID id) {
+        return BASE_PATH.resolve(id.toString() + ".ser");
+    }
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
-            userStatusData = (List<UserStatus>) ois.readObject();
-        } catch (Exception e){
-            throw new RuntimeException("Data load failed." + e.getMessage());
+    // 단일 파일을 로드하는 내부 메서드
+    private UserStatus loadOne(UUID id) {
+        Path filePath = getFilePath(id);
+        if (!Files.exists(filePath)) return null;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
+            return (UserStatus) ois.readObject();
+        } catch (Exception e) {
+            return null;
         }
     }
 
-    private void saveData(){
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))){
-            oos.writeObject(userStatusData);
-        } catch (IOException e){
-            throw new RuntimeException("Data save failed." + e.getMessage());
-        }
-    }
     @Override
     public Optional<UserStatus> find(UUID userStatusID) {
-        loadData();
-        return userStatusData.stream()
-                .filter(userStatus -> userStatus.getId().equals(userStatusID))
-                .findFirst();
+        return Optional.ofNullable(loadOne(userStatusID));
     }
 
     @Override
     public Optional<UserStatus> findByUserID(UUID userID) {
-        loadData();
-        return userStatusData.stream()
-                .filter(userStatus -> userStatus.getUserID().equals(userID))
-                .findFirst();
+        // 모든 파일을 순회하며 userID가 일치하는 첫 번째 상태를 반환
+        try (var files = Files.list(BASE_PATH)) {
+            return files.filter(path -> path.toString().endsWith(".ser"))
+                    .map(this::loadByPath)
+                    .filter(status -> status != null && status.getUserID().equals(userID))
+                    .findFirst();
+        } catch (IOException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public List<UserStatus> findAll() {
-        loadData();
-        return new ArrayList<>(userStatusData);
+        List<UserStatus> list = new ArrayList<>();
+        try (var files = Files.list(BASE_PATH)) {
+            files.filter(path -> path.toString().endsWith(".ser"))
+                    .forEach(path -> {
+                        UserStatus status = loadByPath(path);
+                        if (status != null) list.add(status);
+                    });
+        } catch (IOException e) {
+            System.out.println("FindAll failed: " + e.getMessage());
+        }
+        return list;
     }
 
     @Override
     public void deleteUserStatus(UUID userStatusID) {
-        loadData();
-        userStatusData.removeIf(userStatus -> userStatus.getId().equals(userStatusID));
-        saveData();
+        try {
+            Files.deleteIfExists(getFilePath(userStatusID));
+        } catch (IOException e) {
+            throw new RuntimeException("Delete failed: " + e.getMessage());
+        }
     }
 
     @Override
     public UserStatus save(UserStatus userStatus) {
-        loadData();
-        for(int i=0; i<userStatusData.size(); i++){
-            if(userStatusData.get(i).getId().equals(userStatus.getId())){
-                userStatusData.set(i, userStatus);
-                saveData();
-                return userStatus;
-            }
+        Path filePath = getFilePath(userStatus.getId());
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+            oos.writeObject(userStatus);
+            return userStatus;
+        } catch (IOException e) {
+            throw new RuntimeException("Data save failed: " + e.getMessage());
         }
-        userStatusData.add(userStatus);
-        saveData();
-        return userStatus;
+    }
+
+    // 파일 경로를 통해 객체를 로드하는 헬퍼 메서드
+    private UserStatus loadByPath(Path path) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+            return (UserStatus) ois.readObject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

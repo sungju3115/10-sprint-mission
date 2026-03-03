@@ -1,10 +1,18 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
-import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 
-// update할 때 id를 받는 것이 아닌 이미지 자체를 받는 다고 가정
+@Schema(description = "사용자 정보 수정 요청")
 public record UserUpdateRequest(
-        String newUserName,
+
+        @Schema(description = "수정할 새로운 사용자 이름(닉네임)", example = "새로운승주")
+        String newUsername,
+
+        @Schema(description = "수정할 새로운 이메일 주소", example = "new_seungju@example.com")
+        @Email(message = "올바른 이메일 형식이 아닙니다.")
         String newEmail,
-        BinaryContentCreateRequest profileImage
+
+        @Schema(description = "수정할 새로운 비밀번호", example = "newpassword123!")
+        String newPassword
 ) { }

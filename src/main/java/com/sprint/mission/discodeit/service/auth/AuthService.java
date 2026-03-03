@@ -19,7 +19,7 @@ public class AuthService {
     private final UserStatusRepository userStatusRepository;
     private final AuthMapper authMapper;
 
-    public AuthServiceResponse login(AuthServiceRequest request){
+    public UserResponse login(AuthServiceRequest request){
         // name 같은 지 확인
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getName().equals(request.username()))

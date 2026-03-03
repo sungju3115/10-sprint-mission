@@ -15,7 +15,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -28,29 +30,35 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponse create(MessageCreateRequest request) {
-        User sender = userRepository.find(request.userID())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
+    public MessageResponse create(MessageCreateRequest request, Optional<List<MultipartFile>> attachments) {
+        User sender = userRepository.find(request.authorId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.authorId()));
         Channel channel = channelRepository.find(request.channelId());
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
-        if (channel.getDescriptions().equals("Private") && (!channel.getMembersList().contains(sender))) {
+        if (channel.getType().equals("Private") && (!channel.getMembersList().contains(sender))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
-        // 첨부파일, 생성
-        List<UUID> attachments = new ArrayList<>();
-        if(request.attachments() != null){
-            for(BinaryContentCreateRequest req : request.attachments()){
-                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
-                BinaryContent newAttachment = binaryContentRepository.save(attachment);
-
-                attachments.add(newAttachment.getId());
+        // 첨부파일 처리
+        List<UUID> attachmentIds = new ArrayList<>();
+        attachments.ifPresent(files -> {
+            for (MultipartFile file : files) {
+                try {
+                    BinaryContent attachment = new BinaryContent(
+                            file.getOriginalFilename(),
+                            file.getBytes(),
+                            file.getContentType()
+                    );
+                    attachmentIds.add(binaryContentRepository.save(attachment).getId());
+                } catch (IOException e) {
+                    throw new RuntimeException("파일 처리 실패", e);
+                }
             }
-        }
+        });
 
         // messsage 생성
-        Message message = new Message(request.content(), sender, channel, attachments);
+        Message message = new Message(request.content(), sender, channel, attachmentIds);
 
         // sender ,channel에 추가
         sender.addMessage(message);
@@ -62,9 +70,11 @@ public class BasicMessageService implements MessageService {
         messageRepository.save(message);
         return new MessageResponse(
                 message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
                 message.getContents(),
-                message.getSender().getId(),
                 message.getChannel().getId(),
+                message.getSender().getId(),
                 message.getAttachmentIDs()
         );
     }
@@ -75,9 +85,12 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID));
         return new MessageResponse(
                 msg.getId(),
+                msg.getCreatedAt(),
+                msg.getUpdatedAt(),
                 msg.getContents(),
+                msg.getChannel().getId(),
                 msg.getSender().getId(),
-                msg.getChannel().getId(), msg.getAttachmentIDs()
+                msg.getAttachmentIDs()
         );
     }
 
@@ -87,9 +100,12 @@ public class BasicMessageService implements MessageService {
                 .filter(msg -> msg.getSender().getId().equals(userID))
                 .map(msg -> new MessageResponse(
                         msg.getId(),
+                        msg.getCreatedAt(),
+                        msg.getUpdatedAt(),
                         msg.getContents(),
+                        msg.getChannel().getId(),
                         msg.getSender().getId(),
-                        msg.getChannel().getId(), msg.getAttachmentIDs()
+                        msg.getAttachmentIDs()
                 )).toList();
     }
 
@@ -99,9 +115,11 @@ public class BasicMessageService implements MessageService {
                 .filter(msg -> msg.getChannel().getId().equals(channelID))
                 .map(msg -> new MessageResponse(
                         msg.getId(),
+                        msg.getCreatedAt(),
+                        msg.getUpdatedAt(),
                         msg.getContents(),
-                        msg.getSender().getId(),
                         msg.getChannel().getId(),
+                        msg.getSender().getId(),
                         msg.getAttachmentIDs()
                 )).toList();
     }
@@ -111,9 +129,11 @@ public class BasicMessageService implements MessageService {
         return messageRepository.findAll().stream()
                 .map(msg -> new MessageResponse(
                         msg.getId(),
+                        msg.getCreatedAt(),
+                        msg.getUpdatedAt(),
                         msg.getContents(),
-                        msg.getSender().getId(),
                         msg.getChannel().getId(),
+                        msg.getSender().getId(),
                         msg.getAttachmentIDs()
                 )).toList();
     }
@@ -125,18 +145,9 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID));
 
         // content update
-        if (request.content() != null) {
-            msg.updateContents(request.content());
+        if (request.newContent() != null) {
+            msg.updateContents(request.newContent());
 
-        }
-
-        // attachment 업데이트
-        if (request.attachments() != null) {
-            for (BinaryContentCreateRequest req : request.attachments()) {
-                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
-                BinaryContent savedAttach = binaryContentRepository.save(attachment);
-                msg.addAttachment(savedAttach.getId());
-            }
         }
 
         UUID userID = msg.getSender().getId();
@@ -148,7 +159,7 @@ public class BasicMessageService implements MessageService {
 
         for(Message m : sender.getMessageList()){
             if(m.getId().equals(msg.getId())){
-                m.updateContents(request.content());
+                m.updateContents(request.newContent());
             }
         }
         userRepository.save(sender);
@@ -157,7 +168,7 @@ public class BasicMessageService implements MessageService {
         Channel channel = channelRepository.find(channelID);
         for(Message m : channel.getMessageList()){
             if(m.getId().equals(messageID)){
-                m.updateContents(request.content());
+                m.updateContents(request.newContent());
             }
         }
         channelRepository.save(channel);
@@ -166,9 +177,11 @@ public class BasicMessageService implements MessageService {
 
         return new MessageResponse(
                 msg.getId(),
+                msg.getCreatedAt(),
+                msg.getUpdatedAt(),
                 msg.getContents(),
-                msg.getSender().getId(),
                 msg.getChannel().getId(),
+                msg.getSender().getId(),
                 msg.getAttachmentIDs()
         );
     }
@@ -209,9 +222,11 @@ public class BasicMessageService implements MessageService {
         return channel.getMessageList().stream()
                 .map(msg -> new MessageResponse(
                         msg.getId(),
+                        msg.getCreatedAt(),
+                        msg.getUpdatedAt(),
                         msg.getContents(),
-                        msg.getSender().getId(),
                         msg.getChannel().getId(),
+                        msg.getSender().getId(),
                         msg.getAttachmentIDs()
                 )).toList();
     }
@@ -224,9 +239,11 @@ public class BasicMessageService implements MessageService {
         return user.getMessageList().stream()
                 .map(msg -> new MessageResponse(
                         msg.getId(),
+                        msg.getCreatedAt(),
+                        msg.getUpdatedAt(),
                         msg.getContents(),
-                        msg.getSender().getId(),
                         msg.getChannel().getId(),
+                        msg.getSender().getId(),
                         msg.getAttachmentIDs()
                 )).toList();
     }

@@ -14,76 +14,83 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository {
-    private Map<UUID, Message> messageData;
-    private final Path STORE_FILE;
+
+    private final Path BASE_PATH;
 
     public FileMessageRepository(@Value("${discodeit.repository.path}") String directoryPath) {
-        Path BASE_PATH = Path.of(directoryPath).resolve("message");
-        this.STORE_FILE = BASE_PATH.resolve("message.ser");
+        // 메시지 전용 폴더 경로 설정
+        this.BASE_PATH = Path.of(directoryPath).resolve("message");
         init(BASE_PATH);
-        loadData();
     }
 
-    // 디렉 체크
-    private void init(Path BASE_PATH) {
+    private void init(Path path) {
         try {
-            if (!Files.exists(BASE_PATH)) {
-                Files.createDirectories(BASE_PATH);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
             }
         } catch (IOException e) {
-            System.out.println("Directory creation failed." + e.getMessage());
+            System.out.println("Directory creation failed: " + e.getMessage());
         }
     }
 
-    // 저장 (직렬화)
-    void saveData() {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))) {
-            oos.writeObject(messageData);
-        } catch (IOException e) {
-            throw new RuntimeException("Data save failed." + e.getMessage());
+    // 파일 경로를 생성하는 헬퍼 메서드
+    private Path getFilePath(UUID id) {
+        return BASE_PATH.resolve(id.toString() + ".ser");
+    }
+
+    // 단일 파일을 로드하는 메서드
+    private Message loadOne(UUID id) {
+        Path filePath = getFilePath(id);
+        if (!Files.exists(filePath)) return null;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
+            return (Message) ois.readObject();
+        } catch (Exception e) {
+            return null;
         }
     }
 
-    // 로드 (역직렬화)
-    private void loadData() {
-        // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
-        if (!Files.exists(STORE_FILE)) {
-            messageData = new HashMap<>();
-            return;
-        }
-
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
-            messageData = (Map<UUID, Message>) ois.readObject();
-        } catch (Exception e){
-            throw new RuntimeException("Data load failed." + e.getMessage());
-        }
-    }
     @Override
     public Optional<Message> find(UUID messageID) {
-        loadData();
-        return messageData.values().stream()
-                .filter(message -> message.getId().equals(messageID))
-                .findFirst();
+        // 맵에서 찾는 대신 해당 파일만 바로 로드
+        return Optional.ofNullable(loadOne(messageID));
     }
 
     @Override
     public List<Message> findAll() {
-        loadData();
-        return messageData.values().stream().toList();
+        List<Message> messages = new ArrayList<>();
+        try (var files = Files.list(BASE_PATH)) {
+            files.filter(path -> path.toString().endsWith(".ser"))
+                    .forEach(path -> {
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                            messages.add((Message) ois.readObject());
+                        } catch (Exception ignored) {}
+                    });
+        } catch (IOException e) {
+            System.out.println("FindAll failed: " + e.getMessage());
+        }
+        return messages;
     }
 
     @Override
     public void deleteMessage(UUID messageID) {
-        loadData();
-        messageData.remove(messageID);
-        saveData();
+        try {
+            // 맵에서 삭제하는 대신 파일 삭제
+            Files.deleteIfExists(getFilePath(messageID));
+        } catch (IOException e) {
+            throw new RuntimeException("Delete failed: " + e.getMessage());
+        }
     }
 
     @Override
-    public Message save(Message message){
-        loadData();
-        messageData.put(message.getId(), message);
-        saveData();
-        return message;
+    public Message save(Message message) {
+        Path filePath = getFilePath(message.getId());
+        // 맵에 넣고 통째로 저장하는 대신, 개별 파일로 저장
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+            oos.writeObject(message);
+            return message;
+        } catch (IOException e) {
+            throw new RuntimeException("Data save failed: " + e.getMessage());
+        }
     }
 }
