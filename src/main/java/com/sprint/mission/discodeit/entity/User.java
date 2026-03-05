@@ -36,7 +36,14 @@ public class User extends BaseUpdatableEntity {
         this.username = username;
         this.email = email;
         this.password = password;
-        userStatus = new UserStatus();
+        this.setUserStatus(new UserStatus());
+    }
+
+    public void setUserStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
+        if (this.userStatus != null && this.userStatus.getUser() == null) {
+            userStatus.setUser(this);
+        }
     }
 
     // 비즈니스 메서드
