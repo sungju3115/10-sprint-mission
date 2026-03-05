@@ -27,12 +27,16 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private UserStatus userStatus;
+
     // 생성자
     public User(String username, String email, String password) {
         super();
         this.username = username;
         this.email = email;
         this.password = password;
+        userStatus = new UserStatus();
     }
 
     // 비즈니스 메서드

@@ -11,6 +11,7 @@ import java.util.*;
 @Entity
 @Table(name = "channels")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
     // 필드
     @Enumerated(EnumType.STRING)
@@ -31,10 +32,11 @@ public class Channel extends BaseUpdatableEntity {
         type = ChannelType.PUBLIC;
     }
 
-    // Private Channel 생성자
-    public Channel(){
-        super();
-        type = ChannelType.PRIVATE;
+    // Private Channel 생성
+    public static Channel createPrivateChannel(){
+        Channel channel = new Channel();
+        channel.type = ChannelType.PRIVATE;
+        return channel;
     }
 
     // setter
