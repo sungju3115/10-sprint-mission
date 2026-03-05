@@ -82,7 +82,7 @@ public class BasicChannelService implements ChannelService {
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
         Instant lastCreatedAt = channel.getMessageList().stream()
-                                .map(Base::getCreatedAt)
+                                .map(BaseEntity::getCreatedAt)
                                 .max(Instant::compareTo)
                                 .orElse(null);
 
@@ -123,7 +123,7 @@ public class BasicChannelService implements ChannelService {
             if (isPublic || (isPrivate && isMember)) {
                 // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
                 Instant lastCreatedAt = channel.getMessageList().stream()
-                        .map(Base::getCreatedAt)
+                        .map(BaseEntity::getCreatedAt)
                         .max(Instant::compareTo)
                         .orElse(null);
 
@@ -289,7 +289,7 @@ public class BasicChannelService implements ChannelService {
         return channel.getMembersList().stream()
                 .map(user -> userRepository.find(user.getId())
                         .orElseThrow(()-> new IllegalArgumentException("User not found: "+ user.getId())))
-                .map(User::getName)
+                .map(User::getUsername)
                 .collect(toList());
     }
 

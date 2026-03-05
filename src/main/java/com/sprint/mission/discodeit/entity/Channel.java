@@ -1,38 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.*;
 
 
+@Entity
+@Table(name = "channels")
 @Getter
-public class Channel extends Base  {
+public class Channel extends BaseUpdatableEntity {
     // 필드
-    private String name;
-    private String description;
-    private final String type;
-    private final List<User> membersList;
-    private final List<Message> messageList;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    ChannelType type;
 
-    // 생성자
+    @Column(length = 100)
+    String name;
+
+    @Column(length = 500)
+    String description;
+
+    // Public Channel 생성자
     public Channel(String name, String description) {
         super();
         this.name = name;
         this.description = description;
-        this.membersList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
-        this.type = "PUBLIC";
+        type = ChannelType.PUBLIC;
     }
 
+    // Private Channel 생성자
     public Channel(){
         super();
-        this.name = null;
-        this.description = null;
-        this.membersList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
-        this.type = "PRIVATE";
+        type = ChannelType.PRIVATE;
     }
 
     // setter
@@ -41,24 +43,7 @@ public class Channel extends Base  {
         updateUpdatedAt();
     }
 
-    // other
-    public void addMember(User member){
-        membersList.add(member);
-        updateUpdatedAt();
-    }
-
-    public void removeMember(User member) {
-        membersList.remove(member);
-        updateUpdatedAt();
-    }
-
-    public void addMessage(Message msg){
-        messageList.add(msg);
-        updateUpdatedAt();
-    }
-
-    public void removeMessage(Message msg){
-        messageList.remove(msg);
-        updateUpdatedAt();
+    public void updateDescription(String description) {
+        this.description = description;
     }
 }

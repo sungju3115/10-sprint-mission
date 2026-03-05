@@ -146,7 +146,7 @@
 //        // [저장]
 //        Channel channel = find(channelID);
 //        return channel.getMembersList().stream()
-//                .map(User::getName)
+//                .map(User::getUsername)
 //                .collect(Collectors.toList());
 //    }
 //}

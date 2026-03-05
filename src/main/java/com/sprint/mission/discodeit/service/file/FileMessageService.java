@@ -167,7 +167,7 @@
 //
 //        Channel channel = FileChannelService.find(channelID);
 //        return channel.getMessageList().stream()
-//                .map(Message::getContents)
+//                .map(Message::getContent)
 //                .collect(Collectors.toList());
 //    }
 //
@@ -182,7 +182,7 @@
 //        // service 내부에서 최신으로 loadData()
 //        User user = FileUserService.find(userID);
 //        return user.getMessageList().stream()
-//                .map(Message::getContents)
+//                .map(Message::getContent)
 //                .collect(Collectors.toList());
 //    }
 //}

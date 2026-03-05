@@ -224,7 +224,7 @@
 //        Channel channel = find(channelID);
 //        return channel.getMembersList().stream()
 //                .map(user -> fileUserService.find(user.getId()))
-//                .map(User::getName)
+//                .map(User::getUsername)
 //                .collect(Collectors.toList());
 //    }
 //}

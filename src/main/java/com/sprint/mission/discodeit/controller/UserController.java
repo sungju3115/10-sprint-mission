@@ -30,14 +30,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
-@Tag(name="User", description = "사용자 API")
+@Tag(name="User", description = "User API")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
     // user 등록 - POST /api/users
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "User 생성")
+    @Operation(summary = "User 등록", operationId = "create")
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponses({
             @ApiResponse(
@@ -61,7 +61,7 @@ public class UserController {
 
     // user 정보 수정 - PATCH /api/users/{userId}
     @PatchMapping(value="/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "User 정보 수정")
+    @Operation(summary = "User 정보 수정", operationId = "update")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -93,7 +93,7 @@ public class UserController {
     // user 삭제 - DELETE /api/users/{userId}
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "User 삭제")
+    @Operation(summary = "User 삭제", operationId = "delete")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",
@@ -148,7 +148,7 @@ public class UserController {
 
     // user 다건 조회 - GET /api/users
     @GetMapping
-    @Operation(summary = "User 전체 조회")
+    @Operation(summary = "전체 User 목록 조회", operationId = "findAll")
     @ApiResponse(
             responseCode = "200",
             description = "전체 user 조회 성공",
@@ -161,7 +161,7 @@ public class UserController {
 
     // user 온라인 상태 업데이트 - PATCH /api/users/{userId}/userStatus
     @PatchMapping( "/{userId}/userStatus")
-    @Operation(summary = "User 활동 상태 업데이트")
+    @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",

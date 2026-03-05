@@ -24,14 +24,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
-@Tag(name = "Channel", description = "채널 API")
+@Tag(name = "Channel", description = "Channel API")
 public class ChannelController {
     private final ChannelService channelService;
 
     // public Channel 생성 - POST /api/channels/public
     @PostMapping("/public")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Public Channel 생성")
+    @Operation(summary = "Public Channel 생성", operationId = "create_3")
     @ApiResponse(
             responseCode = "201",
             description = "Public channel 생성 성공",
@@ -46,7 +46,7 @@ public class ChannelController {
 
     // private Channel 생성 - POST /api/channels/private
     @PostMapping("/private")
-    @Operation(summary = "Private channel 생성")
+    @Operation(summary = "Private Channel 생성", operationId = "create_4")
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(
             responseCode = "201",
@@ -94,7 +94,7 @@ public class ChannelController {
 
     // User가 참여 중인 Channel 목록 조회 - GET /api/channels?userID=userId
     @GetMapping
-    @Operation(summary = "User의 channel 목록 조회")
+    @Operation(summary = "User가 참여 중인 Channel 목록 조회", operationId = "findAll_1")
     @ApiResponse(
             responseCode = "200",
             description = "user의 Channel 목록 조회 성공",
@@ -115,7 +115,7 @@ public class ChannelController {
 
     // 채널 수정 - PATCH /api/channels/{channelId} (200 OK)
     @PatchMapping("/{channelId}")
-    @Operation(summary = "channel 정보 수정")
+    @Operation(summary = "channel 정보 수정", operationId = "update_3")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -155,7 +155,7 @@ public class ChannelController {
 
     // 채널 삭제 - DELETE /api/channels/{channelId}
     @DeleteMapping("/{channelId}")
-    @Operation(summary = "Channel 삭제")
+    @Operation(summary = "Channel 삭제", operationId = "delete_2")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",

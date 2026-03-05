@@ -78,7 +78,7 @@
 //        loadData();
 //        // 같은 이름 존재 check
 //        userData.stream()
-//                .filter(user -> user.getName().equals(request.name()))
+//                .filter(user -> user.getUsername().equals(request.name()))
 //                .findFirst()
 //                .ifPresent(
 //                        u -> {
@@ -108,7 +108,7 @@
 //                .filter(u -> u.getId().equals(userID))
 //                .findFirst()
 //                .orElseThrow(() -> throw new IllegalArgumentException("User not found: "+ userID));
-//        return new UserResponse(user.getId(), user.getName(), new UserStatusResponse(status.isOnline()));
+//        return new UserResponse(user.getId(), user.getUsername(), new UserStatusResponse(status.isOnline()));
 //    }
 //
 //    // 다건 조회

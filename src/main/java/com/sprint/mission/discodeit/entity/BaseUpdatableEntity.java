@@ -1,0 +1,25 @@
+package com.sprint.mission.discodeit.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
+
+@Entity
+@MappedSuperclass
+@RequiredArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+public abstract class BaseUpdatableEntity extends BaseEntity {
+    @LastModifiedDate
+    private Instant updatedAt;
+
+    public void updateUpdatedAt() {
+        updatedAt = Instant.now();
+    }
+}

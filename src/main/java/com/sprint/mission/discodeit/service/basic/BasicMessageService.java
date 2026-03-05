@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
@@ -72,7 +71,7 @@ public class BasicMessageService implements MessageService {
                 message.getId(),
                 message.getCreatedAt(),
                 message.getUpdatedAt(),
-                message.getContents(),
+                message.getContent(),
                 message.getChannel().getId(),
                 message.getSender().getId(),
                 message.getAttachmentIDs()
@@ -87,7 +86,7 @@ public class BasicMessageService implements MessageService {
                 msg.getId(),
                 msg.getCreatedAt(),
                 msg.getUpdatedAt(),
-                msg.getContents(),
+                msg.getContent(),
                 msg.getChannel().getId(),
                 msg.getSender().getId(),
                 msg.getAttachmentIDs()
@@ -102,7 +101,7 @@ public class BasicMessageService implements MessageService {
                         msg.getId(),
                         msg.getCreatedAt(),
                         msg.getUpdatedAt(),
-                        msg.getContents(),
+                        msg.getContent(),
                         msg.getChannel().getId(),
                         msg.getSender().getId(),
                         msg.getAttachmentIDs()
@@ -117,7 +116,7 @@ public class BasicMessageService implements MessageService {
                         msg.getId(),
                         msg.getCreatedAt(),
                         msg.getUpdatedAt(),
-                        msg.getContents(),
+                        msg.getContent(),
                         msg.getChannel().getId(),
                         msg.getSender().getId(),
                         msg.getAttachmentIDs()
@@ -131,7 +130,7 @@ public class BasicMessageService implements MessageService {
                         msg.getId(),
                         msg.getCreatedAt(),
                         msg.getUpdatedAt(),
-                        msg.getContents(),
+                        msg.getContent(),
                         msg.getChannel().getId(),
                         msg.getSender().getId(),
                         msg.getAttachmentIDs()
@@ -179,7 +178,7 @@ public class BasicMessageService implements MessageService {
                 msg.getId(),
                 msg.getCreatedAt(),
                 msg.getUpdatedAt(),
-                msg.getContents(),
+                msg.getContent(),
                 msg.getChannel().getId(),
                 msg.getSender().getId(),
                 msg.getAttachmentIDs()
@@ -224,7 +223,7 @@ public class BasicMessageService implements MessageService {
                         msg.getId(),
                         msg.getCreatedAt(),
                         msg.getUpdatedAt(),
-                        msg.getContents(),
+                        msg.getContent(),
                         msg.getChannel().getId(),
                         msg.getSender().getId(),
                         msg.getAttachmentIDs()

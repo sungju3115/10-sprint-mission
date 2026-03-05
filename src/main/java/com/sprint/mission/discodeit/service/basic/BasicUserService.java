@@ -217,7 +217,7 @@ public class BasicUserService implements UserService {
     @Override
     public void validateName(String name){
         userRepository.findAll().stream()
-                .filter(user -> user.getName().equals(name))
+                .filter(user -> user.getUsername().equals(name))
                 .findFirst()
                 .ifPresent(u -> {
                     throw new IllegalArgumentException("Already Present name: " + name);

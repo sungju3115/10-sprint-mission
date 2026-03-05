@@ -32,11 +32,11 @@ public class ReadStatusController {
     // ReadStatus 정보 생성 - POST /api/readStatuses (201 Created)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "읽음 정보 생성")
+    @Operation(summary = "Message 읽음 상태 생성", operationId = "create_1")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "읽음 정보 생성 성공",
+                    description = "Message 읽음 사태가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ReadStatusResponse.class)
@@ -44,7 +44,7 @@ public class ReadStatusController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "channel 혹은 user를 찾을 수 없음",
+                    description = "Channel 혹은 User를 찾을 수 없음",
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
@@ -55,11 +55,11 @@ public class ReadStatusController {
 
     // ReadStatus 정보 수정 - PATCH /api/readStatuses/{readStatusId} (200 OK)
     @PatchMapping("/{readStatusId}")
-    @Operation(summary = "읽음 정보 수정")
+    @Operation(summary = "Message 읽음 상태 수정", operationId = "update_1")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "읽음 정보 수정 완료",
+                    description = "Message 읽음 상태가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ReadStatusResponse.class)
@@ -67,7 +67,7 @@ public class ReadStatusController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "읽음 상태 찾을 수 없음",
+                    description = "Message 읽음 상태 찾을 수 없음",
                     content = @Content(examples = @ExampleObject("ReadStatus not found"))
             )
     })
@@ -86,11 +86,11 @@ public class ReadStatusController {
 
     // 특정 사용자의 메시지 수신 정보 조회 - GET /api/readStatuses?userId=userId
     @GetMapping
-    @Operation(summary = "특정 User의 읽음 상태 정보 조회")
+    @Operation(summary = "User의 읽음 상태 목록 조회", operationId = "findAllByUserId")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "User 모든 읽음 상태 조회 성공",
+                    description = "Message 읽은 상태 목록 조회 성공",
                     content = @Content(
                             array = @ArraySchema(schema = @Schema(implementation = ReadStatusResponse.class))
                     )

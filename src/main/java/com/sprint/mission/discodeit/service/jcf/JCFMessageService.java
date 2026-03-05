@@ -103,7 +103,7 @@
 //
 //        Channel channel = channelService.find(channelID);
 //        return channel.getMessageList().stream()
-//                .map(Message::getContents)
+//                .map(Message::getContent)
 //                .collect(Collectors.toList());
 //    }
 //
@@ -116,7 +116,7 @@
 //
 //        User user = userService.find(userID);
 //        return user.getMessageList().stream()
-//                .map(Message::getContents)
+//                .map(Message::getContent)
 //                .collect(Collectors.toList());
 //    }
 //
