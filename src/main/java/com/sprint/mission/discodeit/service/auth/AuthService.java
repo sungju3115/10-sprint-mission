@@ -5,16 +5,16 @@ import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.auth.AuthMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.JPAUserRepository;
+import com.sprint.mission.discodeit.repository.JPAUserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
 public class AuthService {
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+    private final JPAUserRepository userRepository;
+    private final JPAUserStatusRepository userStatusRepository;
     private final AuthMapper authMapper;
 
     public UserResponse login(AuthServiceRequest request){

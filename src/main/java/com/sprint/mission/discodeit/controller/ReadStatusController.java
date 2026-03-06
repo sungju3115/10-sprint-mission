@@ -104,6 +104,6 @@ public class ReadStatusController {
     public ResponseEntity<List<ReadStatusResponse>> getReadStatusByUserId(
             @Parameter(description = "조회할 userId", example = "123e4567-e89b-12d3-a456-426655440000", required = true)
             @RequestParam UUID userId){
-        return ResponseEntity.ok(readStatusService.findAllByUserID(userId));
+        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }
 }

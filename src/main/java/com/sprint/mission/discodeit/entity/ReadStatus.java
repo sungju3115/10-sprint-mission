@@ -25,7 +25,7 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel;
 
-    @Column
+    @Column(nullable = false)
     Instant lastReadAt;
 
     public ReadStatus(User user, Channel channel) {

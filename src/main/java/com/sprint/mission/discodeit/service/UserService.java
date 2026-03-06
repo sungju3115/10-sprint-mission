@@ -19,9 +19,4 @@ public interface UserService {
     UserResponse update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile);
     default void update() {}
     void deleteUser(UUID userID);
-
-    List<Channel> findJoinedChannels(UUID userID);
-    void validateName(String name);
-    void validateEmail(String email);
-
 }

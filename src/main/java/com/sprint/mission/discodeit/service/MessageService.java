@@ -13,14 +13,9 @@ public interface MessageService {
     // CRUD
     MessageResponse create(MessageCreateRequest Request, Optional<List<MultipartFile>> attachments);
     MessageResponse find(UUID messageID);
-    List<MessageResponse> findAllByUserID(UUID userID);
-    List<MessageResponse> findAllByChannelID(UUID channelID);
-    List<MessageResponse> findAll();
+    List<MessageResponse> findMessagesByUser(UUID userId);
+    List<MessageResponse> findMessagesByChannel(UUID channelId);
     MessageResponse update(UUID messageId, MessageUpdateRequest request);
-    default void update() {}
     void deleteMessage(UUID messageID);
 
-    // 도메인 별 메시지 조회
-    List<MessageResponse> findMessagesByChannel(UUID channelID);
-    List<MessageResponse> findMessagesByUser(UUID userID);
 }

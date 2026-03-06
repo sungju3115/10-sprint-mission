@@ -25,11 +25,11 @@ public class BinaryContent extends BaseEntity {
     private String contentType;
     @Column(nullable = false, columnDefinition = "BYTEA")
     private byte[] bytes;
-
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    // size 정확한 의미를 모르겠음
+    public BinaryContent(String fileName, String contentType, byte[] bytes) {
         this.fileName = fileName;
-        this.size = size;
         this.contentType = contentType;
         this.bytes = bytes;
+        this.size = (long) bytes.length;
     }
 }

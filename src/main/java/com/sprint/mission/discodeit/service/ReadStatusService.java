@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ReadStatusService {
     ReadStatusResponse create(ReadStatusCreateRequest request);
     ReadStatusResponse find(UUID readStatusID);
-    List<ReadStatusResponse> findAllByUserID(UUID userID);
+    List<ReadStatusResponse> findAllByUserId(UUID userID);
     ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request);
     void delete(UUID readStatusID);
 }

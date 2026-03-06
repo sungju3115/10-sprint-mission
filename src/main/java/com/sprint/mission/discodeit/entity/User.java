@@ -27,7 +27,7 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus userStatus;
 
     // 생성자
@@ -36,7 +36,7 @@ public class User extends BaseUpdatableEntity {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.setUserStatus(new UserStatus());
+        this.setUserStatus(new UserStatus(this));
     }
 
     public void setUserStatus(UserStatus userStatus) {

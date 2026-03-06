@@ -5,7 +5,6 @@ import java.util.UUID;
 
 public record BinaryContentResponse(
         UUID id,
-        Instant createdAt,
         String fileName,
         long size,
         String contentType,

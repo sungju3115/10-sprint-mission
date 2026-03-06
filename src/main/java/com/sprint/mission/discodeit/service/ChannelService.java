@@ -14,14 +14,8 @@ public interface ChannelService {
     ChannelResponse createPrivate(ChannelCreateRequestPrivate channelCreateRequestPrivate);
     ChannelResponse find(UUID channelID);
     List<ChannelResponse> findAllByUserID(UUID userID);
-    ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request);
+    ChannelResponse update(UUID channelID, ChannelUpdateRequest request);
     default void update() {}
     // channel 자체 삭제
     void deleteChannel(UUID channelID);
-    // channel에 user 가입
-    void joinChannel (UUID userID, UUID channelID);
-    // channel에 user 탈퇴
-    void leaveChannel(UUID userID, UUID channelID);
-    // channel에서 userList 반환
-    List<String> findMembers(UUID channelID);
 }

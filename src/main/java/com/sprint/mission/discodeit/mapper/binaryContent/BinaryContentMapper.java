@@ -9,18 +9,17 @@ import org.springframework.stereotype.Component;
 public class BinaryContentMapper {
     // DTO -> Entity
     public BinaryContent toEntity(BinaryContentCreateRequest request){
-        return new BinaryContent(request.fileName(), request.content(), request.contentType());
+        return new BinaryContent(request.fileName(), request.contentType(), request.bytes());
     }
 
     // Entity -> DTO
     public BinaryContentResponse toDTO(BinaryContent binaryContent){
         return new BinaryContentResponse(
                 binaryContent.getId(),
-                binaryContent.getCreatedAt(),
                 binaryContent.getFileName(),
-                binaryContent.getData().length,
+                binaryContent.getBytes().length,
                 binaryContent.getContentType(),
-                binaryContent.getData()
+                binaryContent.getBytes()
         );
     }
 }

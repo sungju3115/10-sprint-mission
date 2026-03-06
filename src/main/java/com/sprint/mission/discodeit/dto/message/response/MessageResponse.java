@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.message.response;
 
+import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
@@ -22,10 +24,10 @@ public record MessageResponse(
         @Schema(description = "해당 메시지가 소속된 채널 ID", example = "123e4567-e89b-12d3-a456-426655440000")
         UUID channelId,
 
-        @Schema(description = "메시지 작성자 ID", example = "789f1234-a56b-78c9-d012-345678901234")
-        UUID authorId,
+        @Schema(description = "메시지 작성자")
+        UserResponse author,
 
         @Schema(description = "첨부된 파일(BinaryContent) ID 목록")
-        List<UUID> attachmentIds
+        List<BinaryContentResponse> attachmentIds
 ) {
 }
