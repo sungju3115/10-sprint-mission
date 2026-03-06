@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,10 +37,10 @@ public class ChannelController {
             description = "Public channel 생성 성공",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema (implementation = ChannelResponse.class)
+                    schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelResponse postPublicChannel(@RequestBody ChannelCreateRequestPublic request){
+    public ChannelDTO postPublicChannel(@RequestBody ChannelCreateRequestPublic request){
         return channelService.createPublic(request);
     }
 
@@ -53,10 +53,10 @@ public class ChannelController {
             description = "Private channel 생성 성공",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema (implementation = ChannelResponse.class)
+                    schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelResponse postPrivateChannel(@RequestBody ChannelCreateRequestPrivate request){
+    public ChannelDTO postPrivateChannel(@RequestBody ChannelCreateRequestPrivate request){
         return channelService.createPrivate(request);
     }
 
@@ -69,7 +69,7 @@ public class ChannelController {
                     description = "Channel 조회 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema (implementation = ChannelResponse.class)
+                            schema = @Schema (implementation = ChannelDTO.class)
                     )
             ),
             @ApiResponse(
@@ -80,7 +80,7 @@ public class ChannelController {
                     )
             )
     })
-    public ChannelResponse getChannel(
+    public ChannelDTO getChannel(
             @Parameter(
                     description = "조회할 채널 Id",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -100,9 +100,9 @@ public class ChannelController {
             description = "user의 Channel 목록 조회 성공",
             content = @Content(
                     mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = ChannelResponse.class))
+                    array = @ArraySchema(schema = @Schema(implementation = ChannelDTO.class))
             ))
-    public List<ChannelResponse> getAllChannels(
+    public List<ChannelDTO> getAllChannels(
             @Parameter(
                     description = "조회할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -122,7 +122,7 @@ public class ChannelController {
                     description = "채널 정보 수정 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema (implementation = ChannelResponse.class)
+                            schema = @Schema (implementation = ChannelDTO.class)
                     )
             ),
             @ApiResponse(
@@ -140,7 +140,7 @@ public class ChannelController {
                     )
             )
     })
-    public ChannelResponse updateChannel(
+    public ChannelDTO updateChannel(
             @Parameter(
                     description = "수정할 Channel Id",
                     example = "123e4567-e89b-12d3-a456-426655440000",

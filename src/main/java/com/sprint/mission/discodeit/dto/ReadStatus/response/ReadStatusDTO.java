@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Schema(description = "읽음 상태 상세 응답")
-public record ReadStatusResponse(
+public record ReadStatusDTO(
         @Schema(description = "읽음 상태 고유 식별자(ID)", example = "770e8400-e29b-41d4-a716-446655440000")
         UUID id,
 

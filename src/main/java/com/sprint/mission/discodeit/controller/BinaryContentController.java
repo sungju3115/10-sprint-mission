@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +35,7 @@ public class BinaryContentController {
                     description = "첨부 파일 조회 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BinaryContentResponse.class)
+                            schema = @Schema(implementation = BinaryContentDTO.class)
                     )
             ),
             @ApiResponse(
@@ -46,7 +46,7 @@ public class BinaryContentController {
                     )
             )
     })
-    public ResponseEntity<BinaryContentResponse> getBinaryContent(
+    public ResponseEntity<BinaryContentDTO> getBinaryContent(
             @Parameter(
                     description = "조회할 첨부파일 Id",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -68,11 +68,11 @@ public class BinaryContentController {
             content = @Content(
                     mediaType = "application/json",
                     array = @ArraySchema(
-                            schema = @Schema(implementation = BinaryContentResponse.class)
+                            schema = @Schema(implementation = BinaryContentDTO.class)
                     )
             )
     )
-    public ResponseEntity<List<BinaryContentResponse>> getBinaryContents(
+    public ResponseEntity<List<BinaryContentDTO>> getBinaryContents(
             @Parameter(
                     description = "조회할 첨부파일 ID 목록. 예) binaryContentIds=id1&id2",
                     example = "binaryContentIds=123e4567-e89b-12d3-a456-426655440000&550e8400-e29b-41d4-a716-446655440000",

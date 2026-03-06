@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -20,8 +17,9 @@ import java.util.UUID;
 public abstract class BaseEntity{
     // 필드
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition="UUID")
-    private final UUID id;
+    private UUID id;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -29,7 +27,6 @@ public abstract class BaseEntity{
 
     // 생성자
     public BaseEntity() {
-        this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
     }
 

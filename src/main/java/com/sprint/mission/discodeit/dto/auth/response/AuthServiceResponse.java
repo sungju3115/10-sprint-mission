@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.dto.auth.response;
 
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 
 public record AuthServiceResponse(
-        UserResponse user
+        UserDTO user
 ) {
 }

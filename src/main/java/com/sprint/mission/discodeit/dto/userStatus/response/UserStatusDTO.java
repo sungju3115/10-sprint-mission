@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Schema(description = "사용자 상태 정보 응답")
-public record UserStatusResponse(
+public record UserStatusDTO(
         @Schema(description = "상태 정보 고유 식별자(ID)", example = "880e8400-e29b-41d4-a716-446655440000")
         UUID id,
 

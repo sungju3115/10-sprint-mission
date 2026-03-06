@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.dto.message.response;
 
-import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Schema(description = "메시지 상세 응답")
-public record MessageResponse(
+public record MessageDTO(
         @Schema(description = "메시지 고유 식별자(ID)", example = "550e8400-e29b-41d4-a716-446655440000")
         UUID id,
 
@@ -25,9 +25,9 @@ public record MessageResponse(
         UUID channelId,
 
         @Schema(description = "메시지 작성자")
-        UserResponse author,
+        UserDTO author,
 
         @Schema(description = "첨부된 파일(BinaryContent) ID 목록")
-        List<BinaryContentResponse> attachmentIds
+        List<BinaryContentDTO> attachmentIds
 ) {
 }

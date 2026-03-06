@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +45,7 @@ public class UserController {
                     description = "User 생성 성공",
                     content = @Content(
                             mediaType = "applicaiton/json",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserDTO.class)
                     )
             ),
             @ApiResponse(
@@ -54,8 +54,8 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserResponse postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
-                                 @RequestPart(value="profile", required = false) MultipartFile profile){
+    public UserDTO postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
+                            @RequestPart(value="profile", required = false) MultipartFile profile){
         return userService.create(request, Optional.ofNullable(profile));
     }
 
@@ -67,7 +67,7 @@ public class UserController {
                     responseCode = "200",
                     description = "User 정보 수정 완료",
                     content = @Content(
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserDTO.class)
                     )
             ),
             @ApiResponse(
@@ -76,7 +76,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserResponse updateUser(
+    public UserDTO updateUser(
             @Parameter(
                     description = "수정할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -125,7 +125,7 @@ public class UserController {
                     responseCode = "200",
                     description = "User 단건 조회 성공",
                     content = @Content(
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserDTO.class)
                     )
             ),
             @ApiResponse(
@@ -134,7 +134,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
             )
     })
-    public UserResponse getUser(
+    public UserDTO getUser(
             @Parameter(
                     description = "조회할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -152,10 +152,10 @@ public class UserController {
     @ApiResponse(
             responseCode = "200",
             description = "전체 user 조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))
     )
-    public ResponseEntity<List<UserResponse>> getAllUsers(){
-        List<UserResponse> users = userService.findAll();
+    public ResponseEntity<List<UserDTO>> getAllUsers(){
+        List<UserDTO> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
@@ -166,7 +166,7 @@ public class UserController {
             @ApiResponse(
                     responseCode = "200",
                     description = "User 온라인 상태 업데이트 성공",
-                    content = @Content(schema = @Schema(implementation = UserStatusResponse.class))
+                    content = @Content(schema = @Schema(implementation = UserStatusDTO.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -174,7 +174,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
             )
     })
-    public ResponseEntity<UserStatusResponse> updateStatus(
+    public ResponseEntity<UserStatusDTO> updateStatus(
             @Parameter(
                     description = "업데이트할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.binaryContent.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.JPABinaryContentRepository;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,21 +20,21 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public BinaryContentResponse create(BinaryContentCreateRequest request) {
+    public BinaryContentDTO create(BinaryContentCreateRequest request) {
         BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), request.bytes());
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
         return binaryContentMapper.toDTO(savedBinaryContent);
     }
 
     @Override
-    public BinaryContentResponse find(UUID contentID) {
+    public BinaryContentDTO find(UUID contentID) {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
         return binaryContentMapper.toDTO(binaryContent);
     }
 
     @Override
-    public List<BinaryContentResponse> findAllByIdIn(List<UUID> contentIDs) {
+    public List<BinaryContentDTO> findAllByIdIn(List<UUID> contentIDs) {
         if (contentIDs.isEmpty()) {
             return null;
         }
@@ -58,7 +57,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     Resource download(UUID binaryContentID){
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
                 .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + binaryContentID));
-        BinaryContentResponse dto = binaryContentMapper.toDTO(bt);
+        BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
         return binaryContentRepository.download(dto);
     }
 }

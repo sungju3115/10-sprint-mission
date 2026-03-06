@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusDTO;
 import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     @Transactional
-    public ReadStatusResponse create(ReadStatusCreateRequest request){
+    public ReadStatusDTO create(ReadStatusCreateRequest request){
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userId()));
 
@@ -43,7 +42,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponse find(UUID readStatusID){
+    public ReadStatusDTO find(UUID readStatusID){
         ReadStatus readStatus = readStatusRepository.findById(readStatusID)
                 .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusID));
 
@@ -51,14 +50,14 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userID){
+    public List<ReadStatusDTO> findAllByUserId(UUID userID){
         return readStatusRepository.findAllByUserId(userID).stream()
                 .map(readStatusMapper::toResponse).toList();
     }
 
     @Override
     @Transactional
-    public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request){
+    public ReadStatusDTO update(UUID readStatusId, ReadStatusUpdateRequest request){
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusId));
 

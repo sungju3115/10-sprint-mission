@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -25,43 +25,43 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     @Transactional
-    public UserStatusResponse create(UserStatusCreateRequest request) {
+    public UserStatusDTO create(UserStatusCreateRequest request) {
         // userId의 user 존재 여부 검증
         User user = userRepository.findById(request.userID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
         if(user.getUserStatus() != null){
-            return userStatusMapper.toResponse(user.getUserStatus());
+            return userStatusMapper.toDTO(user.getUserStatus());
         }
 
         UserStatus userStatus = new UserStatus(user);
         user.setUserStatus(userStatus);
 
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDTO(userStatus);
     }
 
     @Override
-    public UserStatusResponse findByUserId(UUID userId){
+    public UserStatusDTO findByUserId(UUID userId){
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDTO(userStatus);
     }
 
     @Override
-    public List<UserStatusResponse> findAll(){
+    public List<UserStatusDTO> findAll(){
         return userStatusRepository.findAll().stream()
-                .map(userStatusMapper::toResponse)
+                .map(userStatusMapper::toDTO)
                 .toList();
     }
 
     @Override
     @Transactional
-    public UserStatusResponse updateByUserID(UUID userId, UserStatusUpdateRequest request) {
+    public UserStatusDTO updateByUserID(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
         userStatus.updateLastActiveAt(request.newLastActiveAt());
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDTO(userStatus);
     }
 
     @Override

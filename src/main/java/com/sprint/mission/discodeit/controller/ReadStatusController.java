@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusDTO;
 import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.Reader;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +38,7 @@ public class ReadStatusController {
                     description = "Message 읽음 사태가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadStatusResponse.class)
+                            schema = @Schema(implementation = ReadStatusDTO.class)
                     )
             ),
             @ApiResponse(
@@ -48,7 +47,7 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public ResponseEntity<ReadStatusResponse> postReadStatus(@RequestBody ReadStatusCreateRequest request){
+    public ResponseEntity<ReadStatusDTO> postReadStatus(@RequestBody ReadStatusCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(readStatusService.create(request));
     }
@@ -62,7 +61,7 @@ public class ReadStatusController {
                     description = "Message 읽음 상태가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadStatusResponse.class)
+                            schema = @Schema(implementation = ReadStatusDTO.class)
                     )
             ),
             @ApiResponse(
@@ -71,7 +70,7 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("ReadStatus not found"))
             )
     })
-    public ResponseEntity<ReadStatusResponse> updateReadStatus(
+    public ResponseEntity<ReadStatusDTO> updateReadStatus(
             @Parameter(
                     description = "수정할 readStatusId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -92,7 +91,7 @@ public class ReadStatusController {
                     responseCode = "200",
                     description = "Message 읽은 상태 목록 조회 성공",
                     content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = ReadStatusResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = ReadStatusDTO.class))
                     )
             ),
             @ApiResponse(
@@ -101,7 +100,7 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("User not found"))
             )
     })
-    public ResponseEntity<List<ReadStatusResponse>> getReadStatusByUserId(
+    public ResponseEntity<List<ReadStatusDTO>> getReadStatusByUserId(
             @Parameter(description = "조회할 userId", example = "123e4567-e89b-12d3-a456-426655440000", required = true)
             @RequestParam UUID userId){
         return ResponseEntity.ok(readStatusService.findAllByUserId(userId));

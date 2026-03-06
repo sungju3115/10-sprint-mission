@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.user.UserMapper;
@@ -25,7 +25,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
-    public UserResponse create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
+    public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.username());
         validateEmail(userRequest.email());
@@ -51,28 +51,28 @@ public class BasicUserService implements UserService {
                 });
 
         User savedUser = userRepository.save(user);
-        return userMapper.toResponse(savedUser, savedUser.getUserStatus());
+        return userMapper.toDTO(savedUser);
     }
 
     @Override
-    public UserResponse find(UUID userId) {
+    public UserDTO find(UUID userId) {
         // user 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        return userMapper.toResponse(user, user.getUserStatus());
+        return userMapper.toDTO(user);
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
-                .map(user -> userMapper.toResponse(user, user.getUserStatus()))
+                .map(userMapper::toDTO)
                 .toList();
     }
 
     // 이름. 프로필 선택적 업데이트
     @Override
     @Transactional
-    public UserResponse update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
+    public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         // user 조회
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
@@ -103,7 +103,7 @@ public class BasicUserService implements UserService {
                     }
                 });
 
-        return userMapper.toResponse(user, user.getUserStatus());
+        return userMapper.toDTO(user);
     }
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X

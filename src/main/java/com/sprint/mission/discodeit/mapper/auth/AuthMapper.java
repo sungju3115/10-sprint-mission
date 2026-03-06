@@ -1,22 +1,15 @@
 package com.sprint.mission.discodeit.mapper.auth;
 
-
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import org.springframework.stereotype.Component;
+import com.sprint.mission.discodeit.mapper.binaryContent.BinaryContentMapper;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class AuthMapper {
-    public UserResponse toResponse(User user, UserStatus status) {
-        return new UserResponse(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getProfileImageId(),
-                status.isOnline()
-        );}
+@Mapper(componentModel = "spring", uses = BinaryContentMapper.class)
+public interface AuthMapper {
+    @Mapping(target = "profile", source = "user.profile")
+    @Mapping(target = "online", source = "status.online")
+    UserDTO toResponse(User user, UserStatus status);
 }

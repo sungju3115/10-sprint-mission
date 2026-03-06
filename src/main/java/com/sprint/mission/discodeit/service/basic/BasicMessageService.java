@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.message.MessageMapper;
@@ -31,7 +31,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional
-    public MessageResponse create(MessageCreateRequest request, Optional<List<MultipartFile>> attachments) {
+    public MessageDTO create(MessageCreateRequest request, Optional<List<MultipartFile>> attachments) {
         // user, channel 존재 check
         User sender = userRepository.findById(request.authorId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.authorId()));
@@ -63,31 +63,31 @@ public class BasicMessageService implements MessageService {
         });
 
 
-        return messageMapper.toResponse(message);
+        return messageMapper.toDTO(message);
     }
 
     @Override
-    public MessageResponse find(UUID messageId) {
+    public MessageDTO find(UUID messageId) {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
-        return messageMapper.toResponse(msg);
+        return messageMapper.toDTO(msg);
     }
 
     @Override
-    public List<MessageResponse> findMessagesByUser(UUID userId) {
+    public List<MessageDTO> findMessagesByUser(UUID userId) {
         return messageRepository.findAllByAuthorId(userId).stream()
-                .map(messageMapper::toResponse).toList();
+                .map(messageMapper::toDTO).toList();
     }
 
     @Override
-    public List<MessageResponse> findMessagesByChannel(UUID channelID) {
+    public List<MessageDTO> findMessagesByChannel(UUID channelID) {
         return messageRepository.findAllByChannelId(channelID).stream()
-                .map(messageMapper::toResponse).toList();
+                .map(messageMapper::toDTO).toList();
     }
 
     @Override
     @Transactional
-    public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+    public MessageDTO update(UUID messageId, MessageUpdateRequest request) {
         // [저장]
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
@@ -95,7 +95,7 @@ public class BasicMessageService implements MessageService {
         if (request.newContent() != null) {
             msg.updateContents(request.newContent());
         }
-        return messageMapper.toResponse(msg);
+        return messageMapper.toDTO(msg);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.channel.ChannelMapper;
 import com.sprint.mission.discodeit.repository.JPAChannelRepository;
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
-
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
@@ -31,7 +29,7 @@ public class BasicChannelService implements ChannelService {
 
     // public Channel 생성
     @Override
-    public ChannelResponse createPublic(ChannelCreateRequestPublic request) {
+    public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
                 .filter(ch -> "PUBLIC".equals(ch.getType()))
@@ -45,12 +43,12 @@ public class BasicChannelService implements ChannelService {
         // [저장]
         Channel savedChannel = channelRepository.save(channel);
         // 초기 channel 생성 시 빈 리스트, null 반환해주는 게 맞을려나
-        return channelMapper.toResponse(savedChannel, new ArrayList<>(), null);
+        return channelMapper.toDTO(savedChannel, new ArrayList<>(), null);
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
     @Override
-    public ChannelResponse createPrivate(ChannelCreateRequestPrivate request) {
+    public ChannelDTO createPrivate(ChannelCreateRequestPrivate request) {
         // channel 생성
         Channel channel = channelMapper.toEntity(request);
 
@@ -67,11 +65,11 @@ public class BasicChannelService implements ChannelService {
 
         Channel savedChannel = channelRepository.save(channel);
         // 초기 생성 시에는 lastMessageAt은 null ??
-        return channelMapper.toResponse(savedChannel, users, null);
+        return channelMapper.toDTO(savedChannel, users, null);
     }
 
     @Override
-    public ChannelResponse find(UUID id) {
+    public ChannelDTO find(UUID id) {
         // channel 조회
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
@@ -90,11 +88,11 @@ public class BasicChannelService implements ChannelService {
                     .toList();
         }
 
-        return channelMapper.toResponse(channel, userIDs, lastCreatedAt);
+        return channelMapper.toDTO(channel, userIDs, lastCreatedAt);
     }
 
     @Override
-    public List<ChannelResponse> findAllByUserID(UUID userID) {
+    public List<ChannelDTO> findAllByUserID(UUID userID) {
         // ChannelRepo channel 전체 조회
         List<Channel> channels = channelRepository.findAllByUserId(userID);
 
@@ -105,12 +103,12 @@ public class BasicChannelService implements ChannelService {
                     .map(BaseEntity::getCreatedAt)
                     .findFirst().orElse(null);
 
-            return channelMapper.toResponse(channel, userIds, lastCreatedAt);
+            return channelMapper.toDTO(channel, userIds, lastCreatedAt);
         }).toList();
     }
 
     @Override
-    public ChannelResponse update(UUID channelID, ChannelUpdateRequest request) {
+    public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
         Channel channel = channelRepository.findById(channelID)
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
@@ -130,7 +128,7 @@ public class BasicChannelService implements ChannelService {
 
         // [저장]
         Channel savedChannel = channelRepository.save(channel);
-        return channelMapper.toResponse(savedChannel, participantIds, lastMessageAt);
+        return channelMapper.toDTO(savedChannel, participantIds, lastMessageAt);
     }
 
     // channel 삭제

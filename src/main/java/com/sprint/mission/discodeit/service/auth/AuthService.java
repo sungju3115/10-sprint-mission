@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.auth;
 
 import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.auth.AuthMapper;
@@ -17,7 +17,7 @@ public class AuthService {
     private final JPAUserStatusRepository userStatusRepository;
     private final AuthMapper authMapper;
 
-    public UserResponse login(AuthServiceRequest request){
+    public UserDTO login(AuthServiceRequest request){
         // name 같은 지 확인
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getUsername().equals(request.username()))

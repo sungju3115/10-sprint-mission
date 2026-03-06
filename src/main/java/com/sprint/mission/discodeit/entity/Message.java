@@ -25,7 +25,7 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "message_attachements",
             joinColumns = @JoinColumn(name="message_id"),
