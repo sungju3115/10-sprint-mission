@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -11,8 +12,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
+@Setter
 @MappedSuperclass
-@RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity{
     // 필드
@@ -23,12 +24,10 @@ public abstract class BaseEntity{
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private final Instant createdAt;
+    private Instant createdAt;
 
     // 생성자
-    public BaseEntity() {
-        this.createdAt = Instant.now();
-    }
+    public BaseEntity() {}
 
     @Override
     public boolean equals(Object o) {

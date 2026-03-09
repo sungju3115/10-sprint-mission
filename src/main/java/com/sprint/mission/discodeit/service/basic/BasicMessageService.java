@@ -80,13 +80,13 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<MessageDTO> findMessagesByUser(UUID userId) {
-        return messageRepository.findAllByAuthorId(userId).stream()
+        return messageRepository.findAllByAuthor_Id(userId).stream()
                 .map(messageMapper::toDTO).toList();
     }
 
     @Override
     public List<MessageDTO> findMessagesByChannel(UUID channelID) {
-        return messageRepository.findAllByChannelId(channelID).stream()
+        return messageRepository.findAllByChannel_Id(channelID).stream()
                 .map(messageMapper::toDTO).toList();
     }
 

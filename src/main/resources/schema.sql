@@ -3,9 +3,18 @@ CREATE TABLE binary_contents (
     created_at TIMESTAMPTZ NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    bytes BYTEA NOT NULL
+    content_type VARCHAR(100) NOT NULL
 );
+
+CREATE TABLE channels (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ,
+    name VARCHAR(100),
+    description VARCHAR(500),
+    type VARCHAR(10) NOT NUll CHECK (type in ('PUBLIC', 'PRIVATE'))
+);
+
 
 CREATE TABLE users (
     id UUID PRIMARY KEY,
@@ -20,39 +29,30 @@ CREATE TABLE users (
         ON DELETE SET NULL
 );
 
-CREATE TABLE user_statuses (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
-    user_id UUID UNIQUE,
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ
-);
-
 CREATE TABLE read_statuses (
     id UUID PRIMARY KEY ,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ,
     user_id UUID NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
+       REFERENCES users(id)
+       ON DELETE CASCADE,
     channel_id UUID NOT NULL,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id)
-        REFERENCES channels(id)
-        ON DELETE CASCADE,
+       REFERENCES channels(id)
+       ON DELETE CASCADE,
     last_read_at TIMESTAMPTZ NOT NULL
 );
 
-CREATE TABLE channels (
+CREATE TABLE user_statuses (
     id UUID PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ,
-    name VARCHAR(100),
-    description VARCHAR(500),
-    type VARCHAR(10) NOT NUll CHECK (type in ('PUBLIC', 'PRIVATE'))
+    user_id UUID NOT NULL UNIQUE,
+    CONSTRAINT fk_user_id FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+    last_active_at TIMESTAMPTZ
 );
 
 CREATE TABLE messages (
@@ -63,10 +63,10 @@ CREATE TABLE messages (
     CONSTRAINT fk_messages_channel FOREIGN KEY (channel_id)
         REFERENCES channels(id)
         ON DELETE CASCADE,
-    author_id UUID,
+    author_id UUID NOT NULL,
     CONSTRAINT fk_messages_author FOREIGN KEY (author_id)
         REFERENCES users(id)
-        ON DELETE SET NULL,
+        ON DELETE CASCADE,
     content VARCHAR(500) NOT NULL
 );
 

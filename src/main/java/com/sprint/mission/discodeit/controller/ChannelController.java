@@ -150,7 +150,7 @@ public class ChannelController {
             @PathVariable UUID channelId,
             @RequestBody ChannelUpdateRequest request
     ){
-        return channelService.updateName(channelId, request);
+        return channelService.update(channelId, request);
     }
 
     // 채널 삭제 - DELETE /api/channels/{channelId}

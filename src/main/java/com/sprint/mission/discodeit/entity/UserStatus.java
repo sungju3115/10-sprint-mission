@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
 // 사용자 온라인 상태
+@Setter(AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "user_statuses")

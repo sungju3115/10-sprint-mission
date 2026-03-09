@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
-        Instant lastCreatedAt = messageRepository.findAllByChannelId(id).stream()
+        Instant lastCreatedAt = messageRepository.findAllByChannel_Id(id).stream()
                 .map(BaseEntity::getCreatedAt)
                 .findFirst()
                 .orElse(null);
@@ -99,7 +99,7 @@ public class BasicChannelService implements ChannelService {
         return channels.stream().map(channel -> {
             List<UUID> userIds = userRepository.findAllByChannelId(channel.getId()).stream()
                     .map(BaseEntity::getId).toList();
-            Instant lastCreatedAt = messageRepository.findAllByChannelId(channel.getId()).stream()
+            Instant lastCreatedAt = messageRepository.findAllByChannel_Id(channel.getId()).stream()
                     .map(BaseEntity::getCreatedAt)
                     .findFirst().orElse(null);
 

@@ -6,6 +6,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /*
 * 이미지, 파일 등 바이너리 데이터를 표현하는 도메인 모델
@@ -13,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 * */
 @Entity
 @Table(name = "binary_contents")
-@RequiredArgsConstructor
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
+@Setter
 public class BinaryContent extends BaseEntity {
     @Column(nullable = false)
     private String fileName;
@@ -23,7 +24,6 @@ public class BinaryContent extends BaseEntity {
     private Long size;
     @Column(nullable = false)
     private String contentType;
-    // size 정확한 의미를 모르겠음
     public BinaryContent(String fileName, String contentType, long size) {
         this.fileName = fileName;
         this.contentType = contentType;
