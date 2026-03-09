@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.JPAChannelRepository;
 import com.sprint.mission.discodeit.repository.JPAMessageRepository;
 import com.sprint.mission.discodeit.repository.JPAUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class BasicMessageService implements MessageService {
     private final JPAChannelRepository channelRepository;
     private final JPABinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     @Transactional
@@ -46,15 +48,18 @@ public class BasicMessageService implements MessageService {
         // message 생성
         Message message = messageMapper.toEntity(request, channel, sender);
 
-        // 첨부파일 처리
+        // 첨부파일 처리, 로직 수정
         attachments.ifPresent(files -> {
             for (MultipartFile file : files) {
                 try {
                     BinaryContent attachment = new BinaryContent(
                             file.getOriginalFilename(),
                             file.getContentType(),
-                            file.getBytes()
+                            file.getSize()
                     );
+
+                    binaryContentStorage.put(attachment.getId(), file.getBytes());
+
                     message.getAttachments().add(attachment);
                 } catch (IOException e) {
                     throw new RuntimeException("파일 처리 실패", e);

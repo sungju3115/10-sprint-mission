@@ -6,8 +6,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.binaryContent.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.JPABinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +20,11 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
     private final JPABinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public BinaryContentDTO create(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), request.bytes());
+        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), request.size());
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
         return binaryContentMapper.toDTO(savedBinaryContent);
     }
@@ -54,10 +57,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    Resource download(UUID binaryContentID){
+    public ResponseEntity<?> download(UUID binaryContentID){
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
                 .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + binaryContentID));
+
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
-        return binaryContentRepository.download(dto);
+        return binaryContentStorage.download(dto);
     }
 }

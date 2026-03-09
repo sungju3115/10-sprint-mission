@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.user.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.*;
 public class BasicUserService implements UserService {
     // 필드
     private final JPAUserRepository userRepository;
+    private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
 
     @Override
@@ -42,9 +44,12 @@ public class BasicUserService implements UserService {
                     BinaryContent bc = new BinaryContent(
                          file.getOriginalFilename(),
                          file.getContentType(),
-                         file.getBytes()
+                         file.getSize()
                     );
+
+                    binaryContentStorage.put(bc.getId(), file.getBytes());
                     user.updateProfile(bc);
+
                  } catch (IOException e){
                      throw new RuntimeException("파일 처리 실패" + e.getMessage());
                  }
@@ -95,8 +100,9 @@ public class BasicUserService implements UserService {
                         BinaryContent bc = new BinaryContent(
                                 file.getOriginalFilename(),
                                 file.getContentType(),
-                                file.getBytes()
+                                file.getSize()
                         );
+                        binaryContentStorage.put(bc.getId(), file.getBytes());
                         user.updateProfile(bc);
                     } catch (IOException e){
                         throw new RuntimeException("파일 처리 실패" + e.getMessage());
