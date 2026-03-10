@@ -100,9 +100,9 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("User not found"))
             )
     })
-    public ResponseEntity<List<ReadStatusDTO>> getReadStatusByUserId(
+    public List<ReadStatusDTO> getReadStatusByUserId(
             @Parameter(description = "조회할 userId", example = "123e4567-e89b-12d3-a456-426655440000", required = true)
             @RequestParam UUID userId){
-        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
+        return readStatusService.findAllByUserId(userId);
     }
 }

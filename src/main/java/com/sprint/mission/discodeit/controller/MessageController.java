@@ -15,11 +15,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -131,7 +133,10 @@ public class MessageController {
             )
     })
     public PageResponse<MessageDTO> getAllMessages(@RequestParam UUID channelId,
-                                                   @RequestParam(defaultValue = "0") int pageNumber){
-        return messageService.findMessagesByChannel(channelId, pageNumber);
+                                                   @RequestParam(value = "cursor", required = false) Instant cursor,
+                                                   Pageable pageable){
+        return messageService.findMessagesByChannel(channelId, cursor, pageable);
     }
 }
+
+

@@ -44,7 +44,7 @@ public class UserController {
                     responseCode = "201",
                     description = "User 생성 성공",
                     content = @Content(
-                            mediaType = "applicaiton/json",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = UserDTO.class)
                     )
             ),

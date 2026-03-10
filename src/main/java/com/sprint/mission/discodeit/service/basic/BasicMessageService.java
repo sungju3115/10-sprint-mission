@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 @Transactional
@@ -91,16 +92,26 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant cursor, Pageable pageable) {
+        Pageable pageRequest = PageRequest.of(0, pageable.getPageSize());
+        Slice<Message> messages;
+        if (cursor == null) {
+            messages = messageRepository.findAllByChannel_Id(channelId, pageRequest);
+        }else{
+            messages = messageRepository.findAllByChannel_IdAndCreatedAtBefore(channelId, cursor, pageRequest);
+        }
 
-        Slice<Message> messageSlice = messageRepository.findAllByChannel_Id(channelId, pageable);
+        Slice<MessageDTO> messageDTOSlice = messages.map(messageMapper::toDTO);
 
-        // 3. Entity Slice를 DTO Slice로 변환
-        Slice<MessageDTO> messageDTOSlice = messageSlice.map(messageMapper::toDTO);
+        Instant nextCursor = null;
+        List<MessageDTO> content = messageDTOSlice.getContent();
 
-        return pageResponseMapper.fromSlice(messageDTOSlice);
-    }
+        if (messages.hasNext() && !content.isEmpty()) {
+            nextCursor = content.get(content.size() - 1).createdAt();
+        }
+
+        return pageResponseMapper.fromSlice(messageDTOSlice, nextCursor)
+;    }
 
     @Override
     @Transactional

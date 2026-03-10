@@ -15,8 +15,10 @@ import java.util.UUID;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findAllByChannel_Id(UUID channelId);
     Slice<Message> findAllByChannel_Id(UUID channelId, Pageable pageable);
+    Slice<Message> findAllByChannel_IdAndCreatedAtBefore(UUID channelId, Instant cursor, Pageable pageable);
     Optional<Message> findByAuthorId(UUID authorId);
     List<Message> findAllByAuthor_Id(UUID authorId);
+    List<Message> findAllByChannelIdIn(List<UUID> channelIds);
 
     @Query("SELECT Max(m.createdAt) FROM Message m WHERE m.channel.id = :channelId")
     Instant findFirstByChannelIdOrderByCreatedAtDesc(@Param("channelId") UUID channelId);

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Transactional
 @RequiredArgsConstructor
@@ -99,21 +100,37 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDTO(channel, userIDs, lastCreatedAt);
     }
 
+    // 여기 로직 수정
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
         // ChannelRepo channel 전체 조회
-        List<Channel> channels = channelRepository.findAllByUserId(userID);
+        List<Channel> channels = channelRepository.findAllWithReadStatusByUserId(userID);
 
-        return channels.stream().map(channel -> {
-            List<UUID> userIds = userRepository.findAllByChannelId(channel.getId()).stream()
-                    .map(BaseEntity::getId).toList();
-            Instant lastCreatedAt = messageRepository.findAllByChannel_Id(channel.getId()).stream()
-                    .map(BaseEntity::getCreatedAt)
-                    .findFirst().orElse(null);
+        List<UUID> channelIds = channels.stream().map(BaseEntity::getId).toList();
 
-            return channelMapper.toDTO(channel, userIds, lastCreatedAt);
-        }).toList();
+        Map<UUID, List<UUID>> userIdsByChannelId = userRepository.findAllByChannelIdIn(channelIds).stream()
+                .collect(Collectors.groupingBy(
+                        user -> user.getChannel().getId(),
+                        Collectors.mapping(BaseEntity::getId, Collectors.toList())
+                ));
+
+        Map<UUID, Instant> lastCreatedAtByChannelId = messageRepository.findAllByChannelIdIn(channelIds).stream()
+                .collect(Collectors.groupingBy(
+                        message -> message.getChannel().getId(),
+                        Collectors.collectingAndThen(
+                                Collectors.maxBy(Comparator.comparing(BaseEntity::getCreatedAt)),
+                                optional -> optional.map(BaseEntity::getCreatedAt).orElse(null)
+                        )
+                ));
+
+        return channels.stream()
+                .map(channel -> channelMapper.toDTO(
+                        channel,
+                        userIdsByChannelId.getOrDefault(channel.getId(), List.of()),
+                        lastCreatedAtByChannelId.get(channel.getId())
+                ))
+                .toList();
     }
 
     @Transactional
