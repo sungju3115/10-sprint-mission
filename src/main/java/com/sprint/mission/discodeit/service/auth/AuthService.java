@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.auth;
 import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.auth.AuthMapper;
+import com.sprint.mission.discodeit.mapper.AuthMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;

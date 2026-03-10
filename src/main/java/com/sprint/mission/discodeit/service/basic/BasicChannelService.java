@@ -5,7 +5,8 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPubl
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.channel.ChannelMapper;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;

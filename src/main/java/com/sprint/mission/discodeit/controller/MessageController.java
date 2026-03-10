@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -129,7 +130,8 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel not found"))
             )
     })
-    public List<MessageDTO> getAllMessages(@RequestParam UUID channelId){
-        return messageService.findMessagesByChannel(channelId);
+    public PageResponse<MessageDTO> getAllMessages(@RequestParam UUID channelId,
+                                                   @RequestParam(defaultValue = "0") int pageNumber){
+        return messageService.findMessagesByChannel(channelId, pageNumber);
     }
 }

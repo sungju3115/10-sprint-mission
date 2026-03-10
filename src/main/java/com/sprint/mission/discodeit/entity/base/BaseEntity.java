@@ -1,8 +1,7 @@
-package com.sprint.mission.discodeit.entity;
+package com.sprint.mission.discodeit.entity.base;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;

@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.UUID;
 
 // 사용자가 채널 별로 가장 최근 메시지를 읽은 시간을 나타냄
 @Entity

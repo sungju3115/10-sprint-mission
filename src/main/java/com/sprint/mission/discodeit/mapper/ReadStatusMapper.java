@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.readStatus;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusDTO;

@@ -3,12 +3,18 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.message.MessageMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +33,7 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final ReadStatusRepository readStatusRepository;
+    private final PageResponseMapper pageResponseMapper;
 
     @Override
     @Transactional
@@ -84,9 +91,15 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MessageDTO> findMessagesByChannel(UUID channelID) {
-        return messageRepository.findAllByChannel_Id(channelID).stream()
-                .map(messageMapper::toDTO).toList();
+    public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Slice<Message> messageSlice = messageRepository.findAllByChannel_Id(channelId, pageable);
+
+        // 3. Entity Slice를 DTO Slice로 변환
+        Slice<MessageDTO> messageDTOSlice = messageSlice.map(messageMapper::toDTO);
+
+        return pageResponseMapper.fromSlice(messageDTOSlice);
     }
 
     @Override

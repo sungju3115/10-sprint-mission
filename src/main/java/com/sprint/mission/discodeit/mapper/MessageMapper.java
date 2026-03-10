@@ -1,12 +1,7 @@
-package com.sprint.mission.discodeit.mapper.message;
+package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.binaryContent.BinaryContentMapper;
-import com.sprint.mission.discodeit.mapper.user.UserMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.binaryContent;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
