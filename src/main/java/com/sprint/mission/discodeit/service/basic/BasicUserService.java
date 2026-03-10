@@ -18,10 +18,10 @@ import java.util.*;
 
 @RequiredArgsConstructor
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class BasicUserService implements UserService {
     // 필드
-    private final JPAUserRepository userRepository;
+    private final UserRepository userRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
 
@@ -60,6 +60,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDTO find(UUID userId) {
         // user 조회
         User user = userRepository.findById(userId)
@@ -68,6 +69,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
                 .map(userMapper::toDTO)

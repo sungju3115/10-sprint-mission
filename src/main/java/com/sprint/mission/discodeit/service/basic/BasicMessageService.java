@@ -21,13 +21,12 @@ import java.util.*;
 @Service
 public class BasicMessageService implements MessageService {
     // 필드
-    private final JPAMessageRepository messageRepository;
-    private final JPAUserRepository userRepository;
-    private final JPAChannelRepository channelRepository;
-    private final JPABinaryContentRepository binaryContentRepository;
+    private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
-    private final JPAReadStatusRepository readStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
     @Transactional
@@ -69,6 +68,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MessageDTO find(UUID messageId) {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
@@ -76,12 +76,14 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MessageDTO> findMessagesByUser(UUID userId) {
         return messageRepository.findAllByAuthor_Id(userId).stream()
                 .map(messageMapper::toDTO).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MessageDTO> findMessagesByChannel(UUID channelID) {
         return messageRepository.findAllByChannel_Id(channelID).stream()
                 .map(messageMapper::toDTO).toList();

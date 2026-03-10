@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface JPAMessageRepository extends JpaRepository<Message, UUID> {
+public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findAllByChannel_Id(UUID channelId);
     Optional<Message> findByAuthorId(UUID authorId);
     List<Message> findAllByAuthor_Id(UUID authorId);

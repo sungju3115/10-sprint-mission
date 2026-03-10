@@ -6,10 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-public interface JPAUserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT rs.user FROM ReadStatus rs WHERE rs.channel.id = :channelId")
     List<User> findAllByChannelId(@Param("channelId") UUID channelId);
 

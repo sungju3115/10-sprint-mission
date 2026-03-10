@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateReque
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.userStatus.UserStatusMapper;
-import com.sprint.mission.discodeit.repository.JPAUserRepository;
-import com.sprint.mission.discodeit.repository.JPAUserStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,10 +17,11 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class BasicUserStatusService implements UserStatusService {
-    private final JPAUserStatusRepository userStatusRepository;
-    private final JPAUserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
     private final UserStatusMapper userStatusMapper;
 
     @Override
@@ -40,7 +41,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         return userStatusMapper.toDTO(userStatus);
     }
-
+    @Transactional(readOnly = true)
     @Override
     public UserStatusDTO findByUserId(UUID userId){
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
@@ -48,6 +49,7 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusMapper.toDTO(userStatus);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserStatusDTO> findAll(){
         return userStatusRepository.findAll().stream()

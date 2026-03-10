@@ -6,28 +6,31 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.channel.ChannelMapper;
-import com.sprint.mission.discodeit.repository.JPAChannelRepository;
-import com.sprint.mission.discodeit.repository.JPAMessageRepository;
-import com.sprint.mission.discodeit.repository.JPAReadStatusRepository;
-import com.sprint.mission.discodeit.repository.JPAUserRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
     // 필드
-    private final JPAChannelRepository channelRepository;
-    private final JPAUserRepository userRepository;
-    private final JPAMessageRepository messageRepository;
-    private final JPAReadStatusRepository ReadStatusRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository ReadStatusRepository;
     private final ChannelMapper channelMapper;
 
     // public Channel 생성
+    @Transactional
     @Override
     public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
@@ -47,6 +50,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
+    @Transactional
     @Override
     public ChannelDTO createPrivate(ChannelCreateRequestPrivate request) {
         // channel 생성
@@ -54,6 +58,9 @@ public class BasicChannelService implements ChannelService {
 
         // private channel의 userList
         List<UUID> users = request.participantIds();
+
+        // channel 영속화 -> readStatus 영속화
+        Channel savedChannel = channelRepository.save(channel);
 
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
         for(UUID userId : users) {
@@ -63,11 +70,11 @@ public class BasicChannelService implements ChannelService {
             ReadStatusRepository.save(status);
         }
 
-        Channel savedChannel = channelRepository.save(channel);
         // 초기 생성 시에는 lastMessageAt은 null ??
         return channelMapper.toDTO(savedChannel, users, null);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ChannelDTO find(UUID id) {
         // channel 조회
@@ -91,6 +98,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDTO(channel, userIDs, lastCreatedAt);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
         // ChannelRepo channel 전체 조회
@@ -107,6 +115,7 @@ public class BasicChannelService implements ChannelService {
         }).toList();
     }
 
+    @Transactional
     @Override
     public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
@@ -132,6 +141,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // channel 삭제
+    @Transactional
     @Override
     public void deleteChannel(UUID channelID) {
         // 존재 확인

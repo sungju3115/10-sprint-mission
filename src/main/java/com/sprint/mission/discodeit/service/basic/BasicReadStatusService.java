@@ -7,9 +7,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.readStatus.ReadStatusMapper;
-import com.sprint.mission.discodeit.repository.JPAChannelRepository;
-import com.sprint.mission.discodeit.repository.JPAReadStatusRepository;
-import com.sprint.mission.discodeit.repository.JPAUserRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class BasicReadStatusService implements ReadStatusService {
     // 필드
-    private final JPAReadStatusRepository readStatusRepository;
-    private final JPAUserRepository userRepository;
-    private final JPAChannelRepository channelRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
     private final ReadStatusMapper readStatusMapper;
 
@@ -43,6 +44,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReadStatusDTO find(UUID readStatusID){
         ReadStatus readStatus = readStatusRepository.findById(readStatusID)
                 .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusID));
