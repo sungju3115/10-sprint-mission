@@ -13,6 +13,7 @@ import java.time.Instant;
 @Getter
 @Entity
 @Table(name = "user_statuses")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserStatus extends BaseUpdatableEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -25,6 +26,7 @@ public class UserStatus extends BaseUpdatableEntity {
         this.user = user;
         this.lastActiveAt = Instant.now();
     }
+
 
     public void setUser(User user) {
         this.user = user;

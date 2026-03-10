@@ -16,6 +16,4 @@ public interface MessageMapper {
     @Mapping(target = "author", source = "author")
     @Mapping(target = "attachmentIds", source = "attachments")
     MessageDTO toDTO(Message message);
-
-    Message toEntity(MessageCreateRequest request, Channel channel, User author);
 }

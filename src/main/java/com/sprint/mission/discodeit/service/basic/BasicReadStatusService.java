@@ -37,8 +37,9 @@ public class BasicReadStatusService implements ReadStatusService {
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + request.channelId()));
 
-        ReadStatus readStatus = readStatusMapper.toEntity(user, channel);
-        return readStatusMapper.toResponse(readStatus);
+        ReadStatus readStatus = new ReadStatus(user, channel);
+        ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
+        return readStatusMapper.toResponse(savedReadStatus);
     }
 
     @Override

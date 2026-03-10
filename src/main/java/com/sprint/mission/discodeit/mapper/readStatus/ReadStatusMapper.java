@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.mapper.readStatus;
 
+import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusDTO;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -16,8 +15,8 @@ public interface ReadStatusMapper {
 
     // DTO -> Entity
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", source = "user")
-    @Mapping(target = "channel", source = "channel")
+    @Mapping(target = "user.id", source = "userId")
+    @Mapping(target = "channel.id", source = "channelId")
     @Mapping(target = "lastReadAt", expression = "java(java.time.Instant.now())")
-    ReadStatus toEntity(User user, Channel channel);
+    ReadStatus toEntity(ReadStatusCreateRequest request);
 }

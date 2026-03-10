@@ -11,5 +11,4 @@ import java.util.UUID;
 public interface JPAChannelRepository extends JpaRepository<Channel, UUID> {
     @Query("SELECT c FROM Channel c JOIN ReadStatus rs ON rs.channel = c WHERE rs.user.id = :userId")
     List<Channel> findAllByUserId(@Param("userId") UUID userId);
-    boolean existsByIdAndMembersContains(UUID id, UUID userId);
 }

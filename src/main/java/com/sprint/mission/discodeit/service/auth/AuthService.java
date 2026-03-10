@@ -28,11 +28,7 @@ public class AuthService {
         if(!(user.getPassword().equals(request.password()))){
             throw new IllegalArgumentException("Wrong password");
         }
-
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
-
         // 유저 정보 반환, DTO로 ??
-        return authMapper.toResponse(user, status);
+        return authMapper.toResponse(user);
     }
 }

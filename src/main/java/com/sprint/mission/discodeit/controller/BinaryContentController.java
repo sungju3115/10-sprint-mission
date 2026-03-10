@@ -95,7 +95,7 @@ public class BinaryContentController {
             description = "파일 다운로드 성공",
             content=@Content(schema = @Schema(type= "string", format = "binary"))
     )
-    public ResponseEntity<Resource> download(@PathVariable UUID binaryContentId){
+    public ResponseEntity<?> download(@PathVariable UUID binaryContentId){
         return binaryContentService.download(binaryContentId);
     }
 

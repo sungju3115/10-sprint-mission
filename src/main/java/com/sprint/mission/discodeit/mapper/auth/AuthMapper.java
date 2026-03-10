@@ -10,6 +10,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = BinaryContentMapper.class)
 public interface AuthMapper {
     @Mapping(target = "profile", source = "user.profile")
-    @Mapping(target = "online", source = "status.online")
-    UserDTO toResponse(User user, UserStatus status);
+    @Mapping(target = "online", expression = "java(user.getUserStatus().isOnline())")
+    UserDTO toResponse(User user);
 }

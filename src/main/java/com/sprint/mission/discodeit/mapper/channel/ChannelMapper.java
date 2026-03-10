@@ -35,12 +35,19 @@ public abstract class ChannelMapper {
     @Mapping(target = "type", constant = "PRIVATE")
     public abstract Channel toEntity(ChannelCreateRequestPrivate req);
 
-    @Mapping(target = "participants", expression = "java(toUserDTO(channel.getId()))")
+    @Mapping(target = "id", source = "channel.id")
+    @Mapping(target = "type", source = "channel.type")
+    @Mapping(target = "name", source = "channel.name")
+    @Mapping(target = "description", source = "channel.description")
+    // 파라미터로 받은 participants와 lastMessageAt을 직접 매핑
+    @Mapping(target = "participants", expression = "java(toUserDTO(participantIds))")
     @Mapping(target = "lastMessageAt", source = "lastMessageAt")
-    public abstract ChannelDTO toDTO(Channel channel, Instant lastMessageAt);
+    public abstract ChannelDTO toDTO(Channel channel, List<UUID> participantIds, Instant lastMessageAt);
 
-    protected List<UserDTO> toUserDTO(UUID chanelId){
-        return readStatusRepository.findAllByChannel_Id(chanelId).stream()
-                .map(readStatus -> userMapper.toDTO(readStatus.getUser())).toList();
+    protected List<UserDTO> toUserDTO(List<UUID> participantIds){
+        return readStatusRepository.findAll().stream()
+                .filter(readStatus -> participantIds.contains(readStatus.getUser().getId()))
+                .map(readStatus -> userMapper.toDTO(readStatus.getUser()))
+                .toList();
     }
 }

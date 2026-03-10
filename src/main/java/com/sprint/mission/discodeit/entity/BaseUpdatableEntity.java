@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
-@Entity
+
 @MappedSuperclass
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

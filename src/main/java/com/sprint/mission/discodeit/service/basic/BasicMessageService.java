@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.message.MessageMapper;
-import com.sprint.mission.discodeit.repository.JPABinaryContentRepository;
-import com.sprint.mission.discodeit.repository.JPAChannelRepository;
-import com.sprint.mission.discodeit.repository.JPAMessageRepository;
-import com.sprint.mission.discodeit.repository.JPAUserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +27,7 @@ public class BasicMessageService implements MessageService {
     private final JPABinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final JPAReadStatusRepository readStatusRepository;
 
     @Override
     @Transactional
@@ -41,12 +39,12 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + request.channelId()));
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
-        if (channel.getType() == ChannelType.PRIVATE && (!channelRepository.existsByIdAndMembersContains(request.channelId(), sender.getId()))) {
+        if (channel.getType() == ChannelType.PRIVATE && (readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
         // message 생성
-        Message message = messageMapper.toEntity(request, channel, sender);
+        Message message = new Message(request.content(), channel, sender);
 
         // 첨부파일 처리, 로직 수정
         attachments.ifPresent(files -> {
@@ -59,7 +57,6 @@ public class BasicMessageService implements MessageService {
                     );
 
                     binaryContentStorage.put(attachment.getId(), file.getBytes());
-
                     message.getAttachments().add(attachment);
                 } catch (IOException e) {
                     throw new RuntimeException("파일 처리 실패", e);
@@ -67,8 +64,8 @@ public class BasicMessageService implements MessageService {
             }
         });
 
-
-        return messageMapper.toDTO(message);
+        Message savedMessage = messageRepository.save(message);
+        return messageMapper.toDTO(savedMessage);
     }
 
     @Override
