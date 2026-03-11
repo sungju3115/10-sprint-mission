@@ -28,6 +28,6 @@ public record MessageDTO(
         UserDTO author,
 
         @Schema(description = "첨부된 파일(BinaryContent) ID 목록")
-        List<BinaryContentDTO> attachmentIds
+        List<BinaryContentDTO> attachments
 ) {
 }

@@ -4,9 +4,11 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPriv
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -30,6 +32,7 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ReadStatusRepository ReadStatusRepository;
     private final ChannelMapper channelMapper;
+    private final UserMapper userMapper;
 
     // public Channel 생성
     @Transactional
@@ -37,7 +40,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
-                .filter(ch -> "PUBLIC".equals(ch.getType()))
+                .filter(ch -> ch.getType() == ChannelType.PUBLIC)
                 .filter(ch -> ch.getName().equals(request.name()))
                 .findFirst()
                 .ifPresent(ch -> {
@@ -48,7 +51,7 @@ public class BasicChannelService implements ChannelService {
         // [저장]
         Channel savedChannel = channelRepository.save(channel);
         // 초기 channel 생성 시 빈 리스트, null 반환해주는 게 맞을려나
-        return channelMapper.toDTO(savedChannel, new ArrayList<>(), null);
+        return toChannelDTO(savedChannel, new ArrayList<>(), null);
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
@@ -60,7 +63,7 @@ public class BasicChannelService implements ChannelService {
 
         // private channel의 userList
         List<UUID> users = request.participantIds();
-
+        List<UserDTO> userList = new ArrayList<>();
         // channel 영속화 -> readStatus 영속화
         Channel savedChannel = channelRepository.save(channel);
 
@@ -70,10 +73,11 @@ public class BasicChannelService implements ChannelService {
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
             ReadStatus status = new ReadStatus(user, channel);
             ReadStatusRepository.save(status);
+            userList.add(userMapper.toDTO(user));
         }
 
         // 초기 생성 시에는 lastMessageAt은 null ??
-        return channelMapper.toDTO(savedChannel, users, null);
+        return toChannelDTO(savedChannel, userList, null);
     }
 
     @Transactional(readOnly = true)
@@ -84,20 +88,17 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
-        Instant lastCreatedAt = messageRepository.findAllByChannel_Id(id).stream()
-                .map(BaseEntity::getCreatedAt)
-                .findFirst()
-                .orElse(null);
+        Instant lastCreatedAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(id);
 
-        List<UUID> userIDs = new ArrayList<>();
+        List<UserDTO> userIDs = List.of();
         // private일 경우
         if (channel.getType() == ChannelType.PRIVATE){
             userIDs = userRepository.findAllByChannelId(id).stream()
-                    .map(BaseEntity::getId)
+                    .map(userMapper::toDTO)
                     .toList();
         }
 
-        return channelMapper.toDTO(channel, userIDs, lastCreatedAt);
+        return toChannelDTO(channel, userIDs, lastCreatedAt);
     }
 
     // 여기 로직 수정
@@ -109,10 +110,13 @@ public class BasicChannelService implements ChannelService {
 
         List<UUID> channelIds = channels.stream().map(BaseEntity::getId).toList();
 
-        Map<UUID, List<UUID>> userIdsByChannelId = userRepository.findAllByChannelIdIn(channelIds).stream()
+        Map<UUID, List<UserDTO>> participantsByChannelId = userRepository.findAllByChannelIdIn(channelIds).stream()
                 .collect(Collectors.groupingBy(
-                        user -> user.getChannel().getId(),
-                        Collectors.mapping(BaseEntity::getId, Collectors.toList())
+                        readStatus -> readStatus.getChannel().getId(),
+                        Collectors.mapping(
+                                readStatus -> userMapper.toDTO(readStatus.getUser()),
+                                Collectors.toList()
+                        )
                 ));
 
         Map<UUID, Instant> lastCreatedAtByChannelId = messageRepository.findAllByChannelIdIn(channelIds).stream()
@@ -125,9 +129,9 @@ public class BasicChannelService implements ChannelService {
                 ));
 
         return channels.stream()
-                .map(channel -> channelMapper.toDTO(
+                .map(channel -> toChannelDTO(
                         channel,
-                        userIdsByChannelId.getOrDefault(channel.getId(), List.of()),
+                        participantsByChannelId.getOrDefault(channel.getId(), List.of()),
                         lastCreatedAtByChannelId.get(channel.getId())
                 ))
                 .toList();
@@ -168,5 +172,17 @@ public class BasicChannelService implements ChannelService {
         // [저장]
         channelRepository.deleteById(channelID);
     }
+
+    private ChannelDTO toChannelDTO(Channel channel, List<UserDTO> participants, Instant lastMessageAt) {
+        return new ChannelDTO(
+                channel.getId(),
+                channel.getType(),
+                channel.getName(),
+                channel.getDescription(),
+                participants,
+                lastMessageAt
+        );
+    }
+
 
 }

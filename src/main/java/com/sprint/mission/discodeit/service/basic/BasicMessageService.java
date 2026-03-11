@@ -35,6 +35,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
     private final ReadStatusRepository readStatusRepository;
     private final PageResponseMapper pageResponseMapper;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     @Transactional
@@ -46,7 +47,7 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + request.channelId()));
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
-        if (channel.getType() == ChannelType.PRIVATE && (readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
+        if (channel.getType() == ChannelType.PRIVATE && (!readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
@@ -62,9 +63,9 @@ public class BasicMessageService implements MessageService {
                             file.getContentType(),
                             file.getSize()
                     );
-
-                    binaryContentStorage.put(attachment.getId(), file.getBytes());
-                    message.getAttachments().add(attachment);
+                    BinaryContent savedBinaryContent = binaryContentRepository.save(attachment);
+                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                    message.getAttachments().add(savedBinaryContent);
                 } catch (IOException e) {
                     throw new RuntimeException("파일 처리 실패", e);
                 }

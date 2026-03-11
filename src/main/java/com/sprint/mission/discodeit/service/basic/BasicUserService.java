@@ -24,6 +24,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     @Transactional
@@ -46,9 +47,9 @@ public class BasicUserService implements UserService {
                          file.getContentType(),
                          file.getSize()
                     );
-
-                    binaryContentStorage.put(bc.getId(), file.getBytes());
-                    user.updateProfile(bc);
+                    BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
+                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                    user.updateProfile(savedBinaryContent);
 
                  } catch (IOException e){
                      throw new RuntimeException("파일 처리 실패" + e.getMessage());
@@ -104,8 +105,9 @@ public class BasicUserService implements UserService {
                                 file.getContentType(),
                                 file.getSize()
                         );
-                        binaryContentStorage.put(bc.getId(), file.getBytes());
-                        user.updateProfile(bc);
+                        BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
+                        binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                        user.updateProfile(savedBinaryContent);
                     } catch (IOException e){
                         throw new RuntimeException("파일 처리 실패" + e.getMessage());
                     }

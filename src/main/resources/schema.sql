@@ -33,8 +33,8 @@ CREATE TABLE read_statuses (
     id UUID PRIMARY KEY ,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ,
-    author_id UUID NOT NULL,
-    CONSTRAINT fk_user_id FOREIGN KEY (author_id)
+    user_id UUID NOT NULL,
+    CONSTRAINT fk_user_id FOREIGN KEY (user_id)
        REFERENCES users(id)
        ON DELETE CASCADE,
     channel_id UUID NOT NULL,
@@ -80,3 +80,8 @@ CREATE TABLE message_attachements (
         REFERENCES binary_contents(id)
         ON DELETE CASCADE
 );
+
+ALTER TABLE read_statuses DROP CONSTRAINT fk_user_id;
+ALTER TABLE read_statuses
+    ADD CONSTRAINT fk_read_statuses_user
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;

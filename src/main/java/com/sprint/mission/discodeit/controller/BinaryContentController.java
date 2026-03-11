@@ -88,7 +88,7 @@ public class BinaryContentController {
     /*
      * 파일 다운로드
      */
-    @GetMapping("/{binaryContentId}/ download")
+    @GetMapping("/{binaryContentId}/download")
     @Operation(summary = "파일 다운로드", operationId = "download")
     @ApiResponse(
             responseCode = "200",
