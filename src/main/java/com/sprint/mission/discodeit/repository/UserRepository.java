@@ -11,10 +11,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-    @Query("SELECT rs.user FROM ReadStatus rs WHERE rs.channel.id = :channelId")
+    @Query("SELECT u\n" +
+            "    FROM ReadStatus rs\n" +
+            "    JOIN rs.user u\n" +
+            "    LEFT JOIN FETCH u.userStatus\n" +
+            "    LEFT JOIN FETCH u.profile\n" +
+            "    WHERE rs.channel.id = :channelId")
     List<User> findAllByChannelId(@Param("channelId") UUID channelId);
 
-    @Query("SELECT rs FROM ReadStatus rs JOIN FETCH rs.user JOIN FETCH rs.channel WHERE rs.channel.id IN :channelIds")
+    @Query("SELECT rs\n" +
+            "    FROM ReadStatus rs\n" +
+            "    JOIN FETCH rs.user u\n" +
+            "    LEFT JOIN FETCH u.userStatus\n" +
+            "    LEFT JOIN FETCH u.profile\n" +
+            "    JOIN FETCH rs.channel\n" +
+            "    WHERE rs.channel.id IN :channelIds")
     List<ReadStatus> findAllByChannelIdIn(@Param("channelIds") List<UUID> channelIds);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userStatus")

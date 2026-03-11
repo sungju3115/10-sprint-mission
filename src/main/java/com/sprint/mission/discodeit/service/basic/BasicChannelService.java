@@ -30,7 +30,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
-    private final ReadStatusRepository ReadStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 
@@ -72,7 +72,7 @@ public class BasicChannelService implements ChannelService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
             ReadStatus status = new ReadStatus(user, channel);
-            ReadStatusRepository.save(status);
+            readStatusRepository.save(status);
             userList.add(userMapper.toDTO(user));
         }
 
@@ -151,15 +151,15 @@ public class BasicChannelService implements ChannelService {
         channel.updateDescription(request.newDescription());
 
         // DTO에 필요한 데이터 수집
-        List<UUID> participantIds = userRepository.findAllByChannelId(channelID).stream()
-                .map(BaseEntity::getId)
+        List<UserDTO> participants = userRepository.findAllByChannelId(channelID).stream()
+                .map(userMapper::toDTO)
                 .toList();
 
         Instant lastMessageAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(channelID);
 
         // [저장]
         Channel savedChannel = channelRepository.save(channel);
-        return channelMapper.toDTO(savedChannel, participantIds, lastMessageAt);
+        return toChannelDTO(savedChannel, participants, lastMessageAt);
     }
 
     // channel 삭제
