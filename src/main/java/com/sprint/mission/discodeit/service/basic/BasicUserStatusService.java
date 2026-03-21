@@ -1,101 +1,76 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
+    private final UserStatusMapper userStatusMapper;
 
     @Override
-    public UserStatusResponse create(UserStatusCreateRequest request) {
+    @Transactional
+    public UserStatusDTO create(UserStatusCreateRequest request) {
         // userId의 user 존재 여부 검증
-        if (userRepository.find(request.userID()).isEmpty()) {
-            throw new IllegalArgumentException("User not found: " + request.userID());
-        }
+        User user = userRepository.findById(request.userID())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
-        if (userStatusRepository.findByUserID(request.userID()).isPresent()) {
-            return find(request.userID());
+        if(user.getUserStatus() != null){
+            return userStatusMapper.toDTO(user.getUserStatus());
         }
-        UserStatus userStatus = new UserStatus(request.userID());
-        UserStatus savedUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(
-                savedUserStatus.getId(),
-                savedUserStatus.getCreatedAt(),
-                savedUserStatus.getUpdatedAt(),
-                savedUserStatus.getUserID(),
-                savedUserStatus.getLastActiveAt(),
-                savedUserStatus.isOnline());
-    }
 
+        UserStatus userStatus = new UserStatus(user);
+        user.setUserStatus(userStatus);
+
+        return userStatusMapper.toDTO(userStatus);
+    }
+    @Transactional(readOnly = true)
     @Override
-    public UserStatusResponse find(UUID userId){
-        UserStatus userStatus = userStatusRepository.findByUserID(userId)
+    public UserStatusDTO findByUserId(UUID userId){
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
-        return new UserStatusResponse(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userStatus.getUserID(),
-                userStatus.getLastActiveAt(),
-                userStatus.isOnline()
-        );
+        return userStatusMapper.toDTO(userStatus);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<UserStatusResponse> findAll(){
+    public List<UserStatusDTO> findAll(){
         return userStatusRepository.findAll().stream()
-                .map(us -> new UserStatusResponse(
-                        us.getId(),
-                        us.getCreatedAt(),
-                        us.getUpdatedAt(),
-                        us.getUserID(),
-                        us.getLastActiveAt(),
-                        us.isOnline()
-                )).toList();
+                .map(userStatusMapper::toDTO)
+                .toList();
     }
 
-//    @Override
-//    public UserStatusResponse update(UserStatusUpdateRequest request) {
-//        UserStatus userStatus = userStatusRepository.find(request.userID())
-//                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userID()));
-//        userStatus.updateLastLogin();
-//        UserStatus newUserStatus = userStatusRepository.save(userStatus);
-//        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
-//    }
-
     @Override
-    public UserStatusResponse updateByUserID(UUID userID, UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.findByUserID(userID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+    @Transactional
+    public UserStatusDTO updateByUserID(UUID userId, UserStatusUpdateRequest request) {
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
         userStatus.updateLastActiveAt(request.newLastActiveAt());
-        UserStatus savedUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(
-                savedUserStatus.getId(),
-                savedUserStatus.getCreatedAt(),
-                savedUserStatus.getUpdatedAt(),
-                savedUserStatus.getUserID(),
-                savedUserStatus.getLastActiveAt(),
-                savedUserStatus.isOnline());
+        return userStatusMapper.toDTO(userStatus);
     }
 
     @Override
+    @Transactional
     public void delete(UUID userStatusId) {
-        UserStatus userStatus = userStatusRepository.find(userStatusId)
+        UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userStatusId));
-        userStatusRepository.deleteUserStatus(userStatus.getId());
+        userStatusRepository.deleteById(userStatus.getId());
     }
 }

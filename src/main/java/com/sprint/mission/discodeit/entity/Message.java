@@ -1,35 +1,54 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Entity
+@Table(name = "messages")
 @Getter
-public class Message extends Base  {
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
     // 필드
-    private String contents;
-    private final User sender;
-    private final Channel channel;
-    private List<UUID> attachmentIDs;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
 
-    // 생성자
-    public Message(String contents, User sender, Channel channel, List<UUID> attachmentIDs) {
-        super();
-        this.contents = contents;
-        this.sender = sender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "message_attachements",
+            joinColumns = @JoinColumn(name="message_id"),
+            inverseJoinColumns = @JoinColumn(name="attachement_id")
+    )
+    private List<BinaryContent> attachments = new ArrayList<>();
+
+    public Message(String content, Channel channel, User author) {
+        this.content = content;
         this.channel = channel;
-        this.attachmentIDs = attachmentIDs;
-
+        this.author = author;
     }
+
     // Setter
     public void updateContents(String contents) {
-        this.contents = contents;
+        this.content = contents;
         updateUpdatedAt();
     }
 
-    public void addAttachment(UUID attachmentID){
-        attachmentIDs.add(attachmentID);
+    public void updateAttachments(List<BinaryContent> attachments) {
+        this.attachments = attachments;
     }
 }

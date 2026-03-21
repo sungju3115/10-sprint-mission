@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.user.UserMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -16,82 +18,71 @@ import java.util.*;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicUserService implements UserService {
     // 필드
     private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
-    private final MessageRepository messageRepository;
-
-    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
 
-    private final UserMapper userMapper;
-
     @Override
-    public UserResponse create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
+    @Transactional
+    public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.username());
         validateEmail(userRequest.email());
 
+        // user 생성 with DTO
+        User user = userMapper.toEntity(userRequest);
+        UserStatus userStatus = new UserStatus(user);
+
+        user.setUserStatus(userStatus);
+
         // 선택적으로 프로필 등록
-        UUID profileImageID = profile
-                .map(file -> {
+        profile.ifPresent(file -> {
                  try{
                     BinaryContent bc = new BinaryContent(
                          file.getOriginalFilename(),
-                         file.getBytes(),
-                         file.getContentType()
+                         file.getContentType(),
+                         file.getSize()
                     );
-                    return binaryContentRepository.save(bc).getId();
+                    BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
+                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                    user.updateProfile(savedBinaryContent);
+
                  } catch (IOException e){
                      throw new RuntimeException("파일 처리 실패" + e.getMessage());
                  }
-                })
-                .orElse(null);
+                });
 
-
-        // user 생성 with DTO
-        User user = userMapper.toEntity(userRequest, profileImageID);
         User savedUser = userRepository.save(user);
-
-        // userStatus 생성
-        UserStatus userStatus = new UserStatus(savedUser.getId());
-        userStatusRepository.save(userStatus);
-
-        return userMapper.toResponse(savedUser, userStatus);
+        return userMapper.toDTO(savedUser);
     }
 
     @Override
-    public UserResponse find(UUID id) {
+    @Transactional(readOnly = true)
+    public UserDTO find(UUID userId) {
         // user 조회
-        User user = userRepository.find(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
-
-        // UserStatusRepo status 조회
-        UserStatus status = userStatusRepository.find(id)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + id));
-        return userMapper.toResponse(user, status);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        return userMapper.toDTO(user);
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        List<User> users = new ArrayList<>(userRepository.findAll());
-        return users.stream()
-                .map(
-                        user -> {
-                            UserStatus status = userStatusRepository.findByUserID(user.getId())
-                                    .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
-                            return userMapper.toResponse(user, status);
-                        })
+    @Transactional(readOnly = true)
+    public List<UserDTO> findAll() {
+        return userRepository.findAllWithStatus().stream()
+                .map(userMapper::toDTO)
                 .toList();
     }
 
     // 이름. 프로필 선택적 업데이트
-    // 업데이트 원하지 않는 경우 null을 전달하는게 맞나??
     @Override
-    public UserResponse update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
+    @Transactional
+    public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         // user 조회
-        User user = userRepository.find(userID)
+        User user = userRepository.findById(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
         // user 이름 선택적 업데이트
@@ -107,131 +98,47 @@ public class BasicUserService implements UserService {
         });
 
         // user의 프로필 선택적 업데이트
-        UUID profileID = profile
-                .map(file -> {
+        profile.ifPresent(file -> {
                     try{
                         BinaryContent bc = new BinaryContent(
                                 file.getOriginalFilename(),
-                                file.getBytes(),
-                                file.getContentType()
+                                file.getContentType(),
+                                file.getSize()
                         );
-                        return binaryContentRepository.save(bc).getId();
+                        BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
+                        binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                        user.updateProfile(savedBinaryContent);
                     } catch (IOException e){
                         throw new RuntimeException("파일 처리 실패" + e.getMessage());
                     }
-                })
-                .orElse(null);
+                });
 
-        user.updateProfileImageID(profileID);
-
-        UserStatus userStatus = userStatusRepository.findByUserID(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
-
-        User savedUser = userRepository.save(user);
-
-        Set<UUID> channelIDs = new HashSet<>();
-        // user가 가입한 channel의 memberList에서 user이름 및 프로필 업데이트
-        for (Channel channel : user.getChannelsList()) {
-            for (User u : channel.getMembersList()) {
-                if (u.getId().equals(userID)) {
-                    u.updateName(request.newUsername());
-                    u.updateProfileImageID(savedUser.getProfileImageId());
-                    channelIDs.add(channel.getId());
-                }
-            }
-        }
-
-        // channelRepository save()
-        for (UUID channelID : channelIDs) {
-            channelRepository.save(channelRepository.find(channelID));
-        }
-
-        // message의 sender 이름 변경, Message Entity는 업데이트 필요없지 않나??
-        Set<UUID> messageIDs = new HashSet<>();
-        for (Message message : user.getMessageList()) {
-            message.getSender().updateName(request.newUsername());
-            message.getSender().updateProfileImageID(savedUser.getProfileImageId());
-            messageIDs.add(message.getId());
-        }
-
-        // messageRepository save()
-        for (UUID messageID : messageIDs) {
-            messageRepository.save(messageRepository.find(messageID)
-                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
-        }
-
-        return userMapper.toResponse(savedUser, userStatus);
+        return userMapper.toDTO(user);
     }
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X
     @Override
-    public void deleteUser(UUID userID) {
+    @Transactional
+    public void deleteUser(UUID userId) {
         // 존재하는 user인지 검증
-        User user = userRepository.find(userID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        // messageRepository에서 user가 보낸 message 삭제
-        List<Message> messages = new ArrayList<>(user.getMessageList());
-        for (Message message : messages) {
-            if (message.getSender() != null && message.getSender().getId().equals(userID)) {
-                messageRepository.deleteMessage(message.getId());
-            }
-        }
-
-        // 삭제할 User의 channel 모두 탈퇴
-        List<UUID> channelIDs = new ArrayList<>();
-        for (Channel channel : user.getChannelsList()) {
-            channel.removeMember(user);
-            channelIDs.add(channel.getId());
-        }
-
-        // 변경사항 저장
-        for (UUID channelID : channelIDs) {
-            channelRepository.save(channelRepository.find(channelID));
-        }
-
-        // userStatusRepo에서 삭제
-        UserStatus userStatus = userStatusRepository.findByUserID(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
-        userStatusRepository.deleteUserStatus(userStatus.getId());
-
-        // binaryContentRepo에서 삭제
-        if(user.getProfileImageId() != null){
-            binaryContentRepository.delete(user.getProfileImageId());
-        }
         // [저장]
-        userRepository.deleteUser(user);
+        userRepository.deleteById(user.getId());
     }
 
-    @Override
-    public List<Channel> findJoinedChannels(UUID userID) {
-        // user find 검증
-        User user = userRepository.find(userID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
-        List<Channel> channels = new ArrayList<>(user.getChannelsList());
-        return channels;
-    }
-
-    // Repo쪽으로 이관해야함.
     // User 이름 유효성 검증
-    @Override
-    public void validateName(String name){
-        userRepository.findAll().stream()
-                .filter(user -> user.getName().equals(name))
-                .findFirst()
-                .ifPresent(u -> {
-                    throw new IllegalArgumentException("Already Present name: " + name);
-                });
+    public void validateName(String username){
+        if(userRepository.existsByUsername(username)){
+            throw new IllegalArgumentException("Already Present name: " + username);
+        }
     }
 
     // 이메일 유효성 검증
-    @Override
-    public void validateEmail(String name){
-        userRepository.findAll().stream()
-                .filter(user -> user.getEmail().equals(name))
-                .findFirst()
-                .ifPresent(u -> {
-                    throw new IllegalArgumentException("Already Present email: " + name);
-                });
+    public void validateEmail(String email){
+        if(userRepository.existsByEmail(email)){
+            throw new IllegalArgumentException("Already Present email: " + email);
+        }
     }
 }
