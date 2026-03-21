@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,11 +15,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +43,7 @@ public class MessageController {
                     description = "메시지 생성 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDTO.class)
                     )
             ),
             @ApiResponse(
@@ -49,8 +52,8 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public MessageResponse postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest request,
-                                       @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
+    public MessageDTO postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest request,
+                                  @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
                                        ){
         return messageService.create(request, Optional.ofNullable(attachments));
     }
@@ -64,7 +67,7 @@ public class MessageController {
                     description = "메시지 수정 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDTO.class)
                     )
             ),
             @ApiResponse(
@@ -73,7 +76,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Message not found"))
             )
     })
-    public MessageResponse updateMessage(
+    public MessageDTO updateMessage(
             @Parameter(
                     description = "수정할 messageId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -120,7 +123,7 @@ public class MessageController {
                     responseCode = "200",
                     description = "channel의 모든 message 조회 성공",
                     content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = MessageResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = MessageDTO.class))
                     )
             ),
             @ApiResponse(
@@ -129,7 +132,11 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel not found"))
             )
     })
-    public List<MessageResponse> getAllMessages(@RequestParam UUID channelId){
-        return messageService.findMessagesByChannel(channelId);
+    public PageResponse<MessageDTO> getAllMessages(@RequestParam UUID channelId,
+                                                   @RequestParam(value = "cursor", required = false) Instant cursor,
+                                                   Pageable pageable){
+        return messageService.findMessagesByChannel(channelId, cursor, pageable);
     }
 }
+
+

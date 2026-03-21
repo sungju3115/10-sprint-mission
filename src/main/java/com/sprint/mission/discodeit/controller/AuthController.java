@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
-import com.sprint.mission.discodeit.dto.auth.response.AuthServiceResponse;
-import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,7 +30,7 @@ public class AuthController {
                     description = "로그인 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserDTO.class)
                     )
             ),
             @ApiResponse(
@@ -52,7 +50,7 @@ public class AuthController {
                     )
             )
     })
-    ResponseEntity<UserResponse> login(@RequestBody AuthServiceRequest request){
+    ResponseEntity<UserDTO> login(@RequestBody AuthServiceRequest request){
         return ResponseEntity.ok(authService.login(request));
     }
 }

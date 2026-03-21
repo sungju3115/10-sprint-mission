@@ -1,20 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
-import java.util.UUID;
 
-// 사용자 별 마지막 접속 시간
+// 사용자 온라인 상태
+@Setter(AccessLevel.PROTECTED)
 @Getter
-public class UserStatus extends Base{
-    private final UUID userID;
+@Entity
+@Table(name = "user_statuses")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserStatus extends BaseUpdatableEntity {
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Column(nullable = false)
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userID) {
-        super();
-        this.userID = userID;
+    public UserStatus(User user) {
+        this.user = user;
         this.lastActiveAt = Instant.now();
+    }
+
+
+    public void setUser(User user) {
+        this.user = user;
+        if (this.user != null && this.user.getUserStatus() == null) {
+            this.user.setUserStatus(this);
+        }
     }
 
     public void updateLastActiveAt(Instant newLastActiveAt) {

@@ -1,39 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.*;
-
-public class User extends Base  {
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class User extends BaseUpdatableEntity {
     // Getter
     // 필드
-    @Getter
-    private String name;
-    @Getter
-    private final List<Channel> channelsList;
-    @Getter
-    private final List<Message> messageList;
-    @Getter
+    @Column(nullable = false, unique = true, length = 50)
+    private String username;
+
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
-    @Getter
+
+    @Column(nullable = false, length = 60)
     private String password;
-    @Getter
-    private UUID profileImageId;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus userStatus;
 
     // 생성자
-    public User(String name, String email, String password, UUID profileImageId) {
+    public User(String username, String email, String password) {
         super();
-        this.name = name;
+        this.username = username;
         this.email = email;
         this.password = password;
-        this.profileImageId = profileImageId;
-        this.channelsList = new ArrayList<>();
-        this.messageList = new ArrayList<Message>();
+        this.setUserStatus(new UserStatus(this));
     }
 
-    // Setter
+    public void setUserStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
+        if (this.userStatus != null && this.userStatus.getUser() == null) {
+            userStatus.setUser(this);
+        }
+    }
+
+    // 비즈니스 메서드
     public void updateName(String name) {
-        this.name = name;
+        this.username = name;
         updateUpdatedAt();
     }
     public void updateEmail(String email) {
@@ -42,29 +58,8 @@ public class User extends Base  {
     public void updatePassword(String password) {
         this.password = password;
     }
-    public void updateProfileImageID(UUID profileImageID) {
-        this.profileImageId = profileImageID;
-    }
-
-    // other
-    public void joinChannel(Channel channel) {
-        channelsList.add(channel);
-        updateUpdatedAt();
-    }
-
-    public void leaveChannel(Channel channel){
-        channelsList.removeIf(ch -> ch.getId().equals(channel.getId()));
-        updateUpdatedAt();
-    }
-
-    public void addMessage(Message msg){
-        messageList.add(msg);
-        updateUpdatedAt();
-    }
-
-    public void removeMessage(Message msg){
-        messageList.remove(msg);
-        updateUpdatedAt();
+    public void updateProfile(BinaryContent profile) {
+        this.profile = profile;
     }
 }
 
