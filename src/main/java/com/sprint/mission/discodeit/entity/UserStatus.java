@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.time.Instant;
 
 // 사용자 온라인 상태
@@ -16,6 +18,8 @@ import java.time.Instant;
 @Table(name = "user_statuses")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserStatus extends BaseUpdatableEntity {
+
+    @JsonBackReference
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -25,15 +29,13 @@ public class UserStatus extends BaseUpdatableEntity {
 
     public UserStatus(User user) {
         this.user = user;
+        setUser(user);
         this.lastActiveAt = Instant.now();
     }
 
-
     public void setUser(User user) {
         this.user = user;
-        if (this.user != null && this.user.getUserStatus() == null) {
-            this.user.setUserStatus(this);
-        }
+        user.setUserStatus(this);
     }
 
     public void updateLastActiveAt(Instant newLastActiveAt) {
@@ -42,8 +44,6 @@ public class UserStatus extends BaseUpdatableEntity {
 
     // 5분 이내면 online
     public boolean isOnline(){
-        return lastActiveAt.isAfter(Instant.now().minusSeconds(300));
+        return lastActiveAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
-
 }
-
