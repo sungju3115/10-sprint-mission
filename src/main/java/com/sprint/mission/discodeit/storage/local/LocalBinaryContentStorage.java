@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.storage;
+package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,6 +39,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Override
     public UUID put(UUID id, byte[] content) {
         Path targetPath = resolvePath(id);
+        if (Files.exists(targetPath)) {
+            throw new IllegalStateException("File already exists");
+        }
         try {
             Files.write(targetPath, content);
             return id;
