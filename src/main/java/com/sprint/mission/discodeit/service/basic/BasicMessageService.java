@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
@@ -39,39 +40,33 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional
-    public MessageDTO create(MessageCreateRequest request, Optional<List<MultipartFile>> attachments) {
+    public MessageDTO create(MessageCreateRequest request, List<BinaryContentCreateRequest> requests) {
         // user, channel 존재 check
         User sender = userRepository.findById(request.authorId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.authorId()));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + request.authorId()));
         Channel channel = channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + request.channelId()));
+                .orElseThrow(() -> new NoSuchElementException("Channel not found: " + request.channelId()));
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
         if (channel.getType() == ChannelType.PRIVATE && (!readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
+        // 첨부파일 수정
+        List<BinaryContent> attachments = requests.stream()
+                .map(req -> {
+                    String fileName = req.fileName();
+                    String contentType = req.contentType();
+                    byte[] bytes = req.bytes();
+
+                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes.length);
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(), bytes);
+                    return binaryContent;
+                }).toList();
+
         // message 생성
-        Message message = new Message(request.content(), channel, sender);
-
-        // 첨부파일 처리, 로직 수정
-        attachments.ifPresent(files -> {
-            for (MultipartFile file : files) {
-                try {
-                    BinaryContent attachment = new BinaryContent(
-                            file.getOriginalFilename(),
-                            file.getContentType(),
-                            file.getSize()
-                    );
-                    BinaryContent savedBinaryContent = binaryContentRepository.save(attachment);
-                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                    message.getAttachments().add(savedBinaryContent);
-                } catch (IOException e) {
-                    throw new RuntimeException("파일 처리 실패", e);
-                }
-            }
-        });
-
+        Message message = new Message(request.content(), channel, sender, attachments);
         Message savedMessage = messageRepository.save(message);
         return messageMapper.toDTO(savedMessage);
     }
@@ -93,22 +88,14 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant cursor, Pageable pageable) {
-        Pageable pageRequest = PageRequest.of(0, pageable.getPageSize());
-        Slice<Message> messages;
-        if (cursor == null) {
-            messages = messageRepository.findAllByChannel_Id(channelId, pageRequest);
-        }else{
-            messages = messageRepository.findAllByChannel_IdAndCreatedAtBefore(channelId, cursor, pageRequest);
-        }
-
-        Slice<MessageDTO> messageDTOSlice = messages.map(messageMapper::toDTO);
+    public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant createdAt, Pageable pageable) {
+        Slice<MessageDTO> messageDTOSlice = messageRepository.findAllByChannelIdWithAuthor(channelId,
+                Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
+                .map(messageMapper::toDTO);
 
         Instant nextCursor = null;
-        List<MessageDTO> content = messageDTOSlice.getContent();
-
-        if (messages.hasNext() && !content.isEmpty()) {
-            nextCursor = content.get(content.size() - 1).createdAt();
+        if (!messageDTOSlice.getContent().isEmpty()) {
+            nextCursor = messageDTOSlice.getContent().get(messageDTOSlice.getContent().size() - 1).createdAt();
         }
 
         return pageResponseMapper.fromSlice(messageDTOSlice, nextCursor)
@@ -119,7 +106,7 @@ public class BasicMessageService implements MessageService {
     public MessageDTO update(UUID messageId, MessageUpdateRequest request) {
         // [저장]
         Message msg = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
+                .orElseThrow(() -> new NoSuchElementException("Message not found: " + messageId));
 
         if (request.newContent() != null) {
             msg.updateContents(request.newContent());
