@@ -34,10 +34,7 @@ public class BasicUserService implements UserService {
         validateEmail(userRequest.email());
 
         // user 생성 with DTO
-        User user = userMapper.toEntity(userRequest);
-        UserStatus userStatus = new UserStatus(user);
-
-        user.setUserStatus(userStatus);
+        User user = new User(userRequest.username(), userRequest.email(), userRequest.password(), null);
 
         // 선택적으로 프로필 등록
         profile.ifPresent(file -> {
@@ -56,6 +53,8 @@ public class BasicUserService implements UserService {
                  }
                 });
 
+        UserStatus userStatus = new UserStatus(user);
+
         User savedUser = userRepository.save(user);
         return userMapper.toDTO(savedUser);
     }
@@ -65,14 +64,14 @@ public class BasicUserService implements UserService {
     public UserDTO find(UUID userId) {
         // user 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
         return userMapper.toDTO(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
-        return userRepository.findAllWithStatus().stream()
+        return userRepository.findAllWithProfileAndStatus().stream()
                 .map(userMapper::toDTO)
                 .toList();
     }
@@ -83,7 +82,7 @@ public class BasicUserService implements UserService {
     public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         // user 조회
         User user = userRepository.findById(userID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + userID));
 
         // user 이름 선택적 업데이트
         Optional.ofNullable(request.newUsername()).ifPresent(name -> {
@@ -122,7 +121,7 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         // 존재하는 user인지 검증
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
 
         // [저장]
         userRepository.deleteById(user.getId());
