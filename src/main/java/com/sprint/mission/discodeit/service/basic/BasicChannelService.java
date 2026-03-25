@@ -22,7 +22,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Transactional
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
@@ -85,7 +84,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDTO find(UUID id) {
         // channel 조회
         Channel channel = channelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Channel not found: " + id));
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
         Instant lastCreatedAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(id);
@@ -101,12 +100,14 @@ public class BasicChannelService implements ChannelService {
         return toChannelDTO(channel, userIDs, lastCreatedAt);
     }
 
-    // 여기 로직 수정
+    // 여기 로직 수정 필요 !!
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
-        // ChannelRepo channel 전체 조회
-        List<Channel> channels = channelRepository.findAllWithReadStatusByUserId(userID);
+        List<Channel> channels = channelRepository.findVisibleChannelsByUserId(userID);
+        if (channels.isEmpty()) {
+            return List.of();
+        }
 
         List<UUID> channelIds = channels.stream().map(BaseEntity::getId).toList();
 
@@ -131,7 +132,9 @@ public class BasicChannelService implements ChannelService {
         return channels.stream()
                 .map(channel -> toChannelDTO(
                         channel,
-                        participantsByChannelId.getOrDefault(channel.getId(), List.of()),
+                        channel.getType() == ChannelType.PRIVATE
+                                ? participantsByChannelId.getOrDefault(channel.getId(), List.of())
+                                : List.of(),
                         lastCreatedAtByChannelId.get(channel.getId())
                 ))
                 .toList();
@@ -142,7 +145,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
         Channel channel = channelRepository.findById(channelID)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
+                .orElseThrow(() -> new NoSuchElementException("Channel not found: " + channelID));
 
         if(channel.getType() == ChannelType.PRIVATE) throw new IllegalArgumentException("Private Channel cannot be updated");
 
@@ -165,12 +168,15 @@ public class BasicChannelService implements ChannelService {
     // channel 삭제
     @Transactional
     @Override
-    public void deleteChannel(UUID channelID) {
+    public void deleteChannel(UUID channelId) {
         // 존재 확인
-        Channel channel = channelRepository.findById(channelID)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel not found: " + channelId));
         // [저장]
-        channelRepository.deleteById(channelID);
+        messageRepository.deleteAllByChannelId(channelId);
+        readStatusRepository.deleteAllByChannelId(channelId);
+
+        channelRepository.deleteById(channelId);
     }
 
     private ChannelDTO toChannelDTO(Channel channel, List<UserDTO> participants, Instant lastMessageAt) {
