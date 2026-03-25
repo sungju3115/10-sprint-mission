@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDTO create(UserStatusCreateRequest request) {
         // userId의 user 존재 여부 검증
         User user = userRepository.findById(request.userID())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userID()));
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
         if(user.getUserStatus() != null){
@@ -37,16 +39,16 @@ public class BasicUserStatusService implements UserStatusService {
         }
 
         UserStatus userStatus = new UserStatus(user);
-        user.setUserStatus(userStatus);
-
+        userStatusRepository.save(userStatus);
         return userStatusMapper.toDTO(userStatus);
     }
+
     @Transactional(readOnly = true)
     @Override
-    public UserStatusDTO findByUserId(UUID userId){
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
-        return userStatusMapper.toDTO(userStatus);
+    public UserStatusDTO find(UUID userStatusId){
+        return userStatusRepository.findById(userStatusId)
+                .map(userStatusMapper::toDTO)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus not found: " + userStatusId));
     }
 
     @Transactional(readOnly = true)
@@ -57,11 +59,21 @@ public class BasicUserStatusService implements UserStatusService {
                 .toList();
     }
 
+    @Transactional
+    @Override
+    public UserStatusDTO update(UUID userStatusId, UserStatusUpdateRequest request) {
+        Instant newLastActiveAt = request.newLastActiveAt();
+        UserStatus userStatus = userStatusRepository.findById(userStatusId)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus not found: " + userStatusId));
+        userStatus.updateLastActiveAt(newLastActiveAt);
+        return userStatusMapper.toDTO(userStatus);
+    }
+
     @Override
     @Transactional
     public UserStatusDTO updateByUserID(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus not found: " + userId));
         userStatus.updateLastActiveAt(request.newLastActiveAt());
         return userStatusMapper.toDTO(userStatus);
     }
@@ -70,7 +82,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     public void delete(UUID userStatusId) {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userStatusId));
+                .orElseThrow(() -> new NoSuchElementException("UserStatus not found: " + userStatusId));
         userStatusRepository.deleteById(userStatus.getId());
     }
 }
