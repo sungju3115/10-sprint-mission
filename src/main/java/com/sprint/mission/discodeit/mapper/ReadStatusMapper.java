@@ -11,7 +11,7 @@ public interface ReadStatusMapper {
     // Entity -> DTO
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "channel.id", target = "channelId")
-    ReadStatusDTO toResponse(ReadStatus readStatus);
+    ReadStatusDTO toDto(ReadStatus readStatus);
 
     // DTO -> Entity
     @Mapping(target = "id", ignore = true)
