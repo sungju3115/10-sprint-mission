@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
-import com.sprint.mission.discodeit.service.auth.AuthService;
+import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name="Auth", description = "인증 API")
 public class AuthController {
-    private final AuthService authService;
+    private final BasicAuthService authService;
 
     // 로그인 - POST /api/auth/login
     @PostMapping("/login")
