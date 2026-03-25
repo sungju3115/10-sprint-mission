@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -33,29 +34,29 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     public ReadStatusDTO create(ReadStatusCreateRequest request){
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userId()));
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + request.userId()));
 
         Channel channel = channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + request.channelId()));
+                .orElseThrow(() -> new NoSuchElementException("Channel not found: " + request.channelId()));
 
         ReadStatus readStatus = new ReadStatus(user, channel);
         ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
-        return readStatusMapper.toResponse(savedReadStatus);
+        return readStatusMapper.toDto(savedReadStatus);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ReadStatusDTO find(UUID readStatusID){
         ReadStatus readStatus = readStatusRepository.findById(readStatusID)
-                .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusID));
+                .orElseThrow(() -> new NoSuchElementException("ReadStatus not found: " + readStatusID));
 
-        return readStatusMapper.toResponse(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
     public List<ReadStatusDTO> findAllByUserId(UUID userID){
         return readStatusRepository.findAllByUser_Id(userID).stream()
-                .map(readStatusMapper::toResponse).toList();
+                .map(readStatusMapper::toDto).toList();
     }
 
     @Override
@@ -65,14 +66,14 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("ReadStatus not found: " + readStatusId));
 
         readStatus.updateLastReadTime();
-        return readStatusMapper.toResponse(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
     @Transactional
     public void delete(UUID readStatusID){
         if(!readStatusRepository.existsById(readStatusID)){
-            throw new IllegalArgumentException("ReadStatus not found: " + readStatusID);
+            throw new NoSuchElementException("ReadStatus not found: " + readStatusID);
         }
         readStatusRepository.deleteById(readStatusID);
     }
