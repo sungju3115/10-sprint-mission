@@ -28,8 +28,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "    WHERE rs.channel.id IN :channelIds")
     List<ReadStatus> findAllByChannelIdIn(@Param("channelIds") List<UUID> channelIds);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.userStatus")
-    List<User> findAllWithStatus();
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.profile " +
+            "JOIN fetch u.userStatus")
+    List<User> findAllWithProfileAndStatus();
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userStatus LEFT JOIN FETCH u.profile WHERE u.username = :username")
     Optional<User> findByUsernameWithProfile(@Param("username") String username);
