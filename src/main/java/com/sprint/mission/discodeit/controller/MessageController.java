@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
@@ -21,7 +22,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,7 +58,21 @@ public class MessageController {
     public MessageDTO postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest request,
                                   @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
                                        ){
-        return messageService.create(request, Optional.ofNullable(attachments));
+        List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+                .map(files -> files.stream()
+                .map(file -> {
+                    try {
+                        return new BinaryContentCreateRequest(
+                                file.getOriginalFilename(),
+                                file.getContentType(),
+                                file.getBytes()
+                        );
+                    }catch (IOException e){
+                        throw new RuntimeException(e);
+                    }
+                }).toList())
+                .orElse(new ArrayList<>());
+        return messageService.create(request, attachmentRequests);
     }
 
     // 메시지 수정 - PATCH /api/messages/{messageId} (200 OK)
