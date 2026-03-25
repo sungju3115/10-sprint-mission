@@ -14,4 +14,13 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
     @Query("SELECT rs.channel FROM ReadStatus rs JOIN rs.channel WHERE rs.user.id = :userId")
     List<Channel> findAllWithReadStatusByUserId(@Param("userId")UUID userId);
+
+    @Query("""
+            SELECT DISTINCT c
+            FROM Channel c
+            LEFT JOIN ReadStatus rs ON rs.channel = c AND rs.user.id = :userId
+            WHERE c.type = com.sprint.mission.discodeit.entity.ChannelType.PUBLIC
+               OR rs.id IS NOT NULL
+            """)
+    List<Channel> findVisibleChannelsByUserId(@Param("userId") UUID userId);
 }
