@@ -14,21 +14,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
 
-    @Override
     @Transactional
+    @Override
     public BinaryContentDTO create(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), request.size());
+        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), (long) request.bytes().length);
+
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(savedBinaryContent.getId(), request.bytes());
+
         return binaryContentMapper.toDTO(savedBinaryContent);
     }
 
@@ -36,13 +39,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional(readOnly = true)
     public BinaryContentDTO find(UUID contentID) {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
-                .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent not found: " + contentID));
         return binaryContentMapper.toDTO(binaryContent);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<BinaryContentDTO> findAllByIdIn(List<UUID> contentIDs) {
+        // 여기가 굳이 필요했던가...
         if (contentIDs.isEmpty()) {
             return new ArrayList<>();
         }
