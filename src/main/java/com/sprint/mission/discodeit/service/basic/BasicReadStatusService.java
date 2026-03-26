@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -42,13 +41,13 @@ public class BasicReadStatusService implements ReadStatusService {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 생성 실패 - 존재하지 않는 userId: {}", request.userId());
-                    return new UserNotFoundException("User not found", request.userId());
+                    return new UserNotFoundException(request.userId());
                 });
 
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 생성 실패 - 존재하지 않는 channelId: {}", request.channelId());
-                    return new ChannelNotFoundException("Channel not found", request.channelId());
+                    return new ChannelNotFoundException(request.channelId());
                 });
 
         ReadStatus readStatus = new ReadStatus(user, channel);
@@ -64,7 +63,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.findById(readStatusID)
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 조회 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
-                    return new ReadStatusNotFoundException("ReadStatus not found", readStatusID);
+                    return new ReadStatusNotFoundException(readStatusID);
                 });
 
         return readStatusMapper.toDto(readStatus);
@@ -85,7 +84,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 업데이트 실패 - 존재하지 않는 readStatusId: {}", readStatusId);
-                    return new ReadStatusNotFoundException("ReadStatus not found", readStatusId);
+                    return new ReadStatusNotFoundException(readStatusId);
                 });
 
         readStatus.updateLastReadTime();
@@ -100,7 +99,7 @@ public class BasicReadStatusService implements ReadStatusService {
         log.debug("ReadStatus 삭제 요청 - readStatusId: {}", readStatusID);
         if(!readStatusRepository.existsById(readStatusID)){
             log.warn("ReadStatus 삭제 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
-            throw new ReadStatusNotFoundException("ReadStatus not found", readStatusID);
+            throw new ReadStatusNotFoundException(readStatusID);
         }
         log.debug("ReadStatus 삭제 성공 - readStatusId:");
         readStatusRepository.deleteById(readStatusID);

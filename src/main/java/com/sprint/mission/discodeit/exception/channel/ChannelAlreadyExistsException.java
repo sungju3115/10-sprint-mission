@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.util.Map;
 
 public class ChannelAlreadyExistsException extends ChannelException{
-    public ChannelAlreadyExistsException(String key, Object value){
-        super(ErrorCode.CHANNEL_ALREADY_EXISTS, Map.of(key, value));
+    public ChannelAlreadyExistsException(String channelName){
+        super(ErrorCode.CHANNEL_ALREADY_EXISTS, Map.of("channelName", channelName));
     }
 }

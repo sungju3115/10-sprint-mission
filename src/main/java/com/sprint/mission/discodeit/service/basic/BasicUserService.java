@@ -73,7 +73,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 조회 실패 - 존재하지 않는 userId: {}", userId);
-                    return new NoSuchElementException("User not found: " + userId);
+                    return new UserNotFoundException(userId);
                 });
         return userMapper.toDTO(user);
     }
@@ -94,7 +94,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> {
                     log.warn("사용자 수정 실패 - 존재하지 않는 userId: {}", userID);
-                    return new UserNotFoundException("User not found", userID);
+                    return new UserNotFoundException(userID);
                 });
 
         // user 이름 선택적 업데이트
@@ -149,7 +149,7 @@ public class BasicUserService implements UserService {
     public void validateName(String username){
         if(userRepository.existsByUsername(username)){
             log.warn("사용자 생성/수정 실패 - 이미 존재하는 username: {}", username);
-            throw new AlreadyExistsNameException("이미 존재하는 username", username);
+            throw new AlreadyExistsNameException(username);
         }
     }
 
@@ -157,7 +157,7 @@ public class BasicUserService implements UserService {
     public void validateEmail(String email){
         if(userRepository.existsByEmail(email)){
             log.warn("사용자 생성/수정 실패 - 이미 존재하는 email: {}", email);
-            throw new AlreadyExistsEmailException("이미 존재하는 이메일", email);
+            throw new AlreadyExistsEmailException(email);
         }
     }
 }

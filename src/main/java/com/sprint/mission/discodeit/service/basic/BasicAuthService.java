@@ -28,12 +28,12 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findByUsernameWithProfile(request.username())
                 .orElseThrow(() -> {
                     log.warn("로그인 실패 - 존재하지 않는 사용자: {}", request.username());
-                    return new UserNotFoundException("존재하지 않는 username", request.username());
+                    return new UserNotFoundException(request.username());
                 });
 
         if(!(user.getPassword().equals(request.password()))){
             log.warn("로그인 실패 - 비밀번호 불일치: {}", request.username());
-            throw new InvalidPasswordException("로그인 시도한 username", request.username());
+            throw new InvalidPasswordException(request.username());
         }
 
         log.info("로그인 성공 - username: {}", request.username());

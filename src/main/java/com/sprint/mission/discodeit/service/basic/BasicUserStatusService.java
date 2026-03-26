@@ -37,7 +37,7 @@ public class BasicUserStatusService implements UserStatusService {
         User user = userRepository.findById(request.userID())
                 .orElseThrow(() -> {
                     log.warn("UserStatus 생성 실패 - 존재하지 않는 userId: {}", request.userID());
-                    return new UserNotFoundException("User not found", request.userID());
+                    return new UserNotFoundException(request.userID());
                 });
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
@@ -60,7 +60,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .map(userStatusMapper::toDTO)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 조회 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
+                    return new UserStatusNotFoundException(userStatusId);
                 });
     }
 
@@ -81,7 +81,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
+                    return new UserStatusNotFoundException(userStatusId);
                 });
         userStatus.updateLastActiveAt(newLastActiveAt);
         userStatusRepository.save(userStatus);
@@ -96,7 +96,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatus, userId: {}", userId);
-                    return new UserStatusNotFoundException("UserStatus not found by userId", userId);
+                    return UserStatusNotFoundException.byUserId(userId);
                 });
         userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
@@ -111,7 +111,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 삭제 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
+                    return new UserStatusNotFoundException(userStatusId);
                 });
         userStatusRepository.deleteById(userStatus.getId());
         log.debug("UserStatus 삭제 성공 - userStatusId: {}", userStatusId);

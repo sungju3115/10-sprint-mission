@@ -50,7 +50,7 @@ public class BasicChannelService implements ChannelService {
                 .findFirst()
                 .ifPresent(ch -> {
                     log.warn("Public 채널 생성 실패 - 이미 존재하는 channel name: {}", ch.getName());
-                    throw new ChannelAlreadyExistsException("이미 존재하는 이름", ch.getName());
+                    throw new ChannelAlreadyExistsException(ch.getName());
                 });
 
         Channel channel = channelMapper.toEntity(request);
@@ -80,7 +80,7 @@ public class BasicChannelService implements ChannelService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> {
                         log.warn("Private 채널 생성 실패 - 존재하지 않는 userId: {}", userId);
-                        return new UserNotFoundException("존재하지 않는 userId" , userId);
+                        return new UserNotFoundException(userId);
                     });
             ReadStatus status = new ReadStatus(user, channel);
             readStatusRepository.save(status);
@@ -100,7 +100,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("채널 조회 실패 - 존재하지 않는 channelId: {}", id);
-                    return new ChannelNotFoundException("존재하지 않는 channelId", id);
+                    return new ChannelNotFoundException(id);
                 });
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
@@ -165,12 +165,12 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelID)
                 .orElseThrow(() -> {
                     log.warn("채널 수정 실패 - 존재하지 않는 channelId: {}", channelID);
-                    return new ChannelNotFoundException("존재하지 않는 channelId", channelID);
+                    return new ChannelNotFoundException(channelID);
                 });
 
         if (channel.getType() == ChannelType.PRIVATE) {
             log.warn("채널 수정 실패 - Private 채널은 수정 불가: {}", channelID);
-            throw new PrivateChannelUpdateNotAllowed("Private 채널 수정 불가", channelID);
+            throw new PrivateChannelUpdateNotAllowed(channelID);
         }
 
         // 필드 업데이트
@@ -198,7 +198,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> {
                     log.warn("채널 삭제 실패 - 존재하지 않는 channelId: {}", channelId);
-                    return new ChannelNotFoundException("존재하지 않는 channelId", channelId);
+                    return new ChannelNotFoundException(channelId);
                 });
         messageRepository.deleteAllByChannelId(channelId);
         readStatusRepository.deleteAllByChannelId(channelId);

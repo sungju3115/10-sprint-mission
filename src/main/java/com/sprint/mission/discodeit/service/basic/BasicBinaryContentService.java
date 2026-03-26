@@ -47,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() ->{
                         log.warn("파일 조회 실패 - 존재하지 않는 fileId: {}", contentID);
-                        return new BinaryContentNotFound("존재하지 않는 fileId", contentID);
+                        return new BinaryContentNotFound(contentID);
                 });
         log.debug("파일 조회 성공 - fileId: {}", binaryContent.getId());
         return binaryContentMapper.toDTO(binaryContent);
@@ -72,7 +72,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() -> {
                     log.warn("파일 삭제 실패 - 존재하지 않는 contentID: {}", contentID);
-                    return new BinaryContentNotFound("존재하지 않는 contentID", contentID);
+                    return new BinaryContentNotFound(contentID);
                 });
         binaryContentRepository.deleteById(binaryContent.getId());
     }
@@ -84,7 +84,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
                 .orElseThrow(() -> {
                     log.warn("파일 다운로드 요청 실패 - 존재하지 않는 binaryContentID: {}", binaryContentID);
-                    return new BinaryContentNotFound("존재하지 않는 binaryContentId", binaryContentID);
+                    return new BinaryContentNotFound(binaryContentID);
                 });
 
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);

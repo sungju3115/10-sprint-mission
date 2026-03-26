@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.util.Map;
 
 public class NotPrivateChannelMemberException extends ChannelException{
-    public NotPrivateChannelMemberException(String key, Object value){
-        super(ErrorCode.NOT_PRIVATE_CHANNEL_MEMBER_EXCEPTION, Map.of(key, value));
+    public NotPrivateChannelMemberException(UUID userId, UUID channelId){
+        super(ErrorCode.NOT_PRIVATE_CHANNEL_MEMBER_EXCEPTION, Map.of("userId", userId, "channelId", channelId));
     }
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ChannelNotFoundException extends ChannelException{
-    public ChannelNotFoundException(String key, Object value){
-        super(ErrorCode.CHANNEL_NOT_FOUND, Map.of(key, value));
+    public ChannelNotFoundException(UUID channelId){
+        super(ErrorCode.CHANNEL_NOT_FOUND, Map.of("channelId", channelId));
     }
 }

@@ -51,18 +51,18 @@ public class BasicMessageService implements MessageService {
         User sender = userRepository.findById(request.authorId())
                 .orElseThrow(() -> {
                     log.warn("메시지 생성 실패 - 존재하지 않는 authorId: {}", request.authorId());
-                    return new UserNotFoundException("User not found: ", request.authorId());
+                    return new UserNotFoundException(request.authorId());
                 });
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> {
                     log.warn("메시지 생성 실패 - 존재하지 않는 channelId: {}", request.channelId());
-                    return new ChannelNotFoundException("Channel not found: ", request.channelId());
+                    return new ChannelNotFoundException(request.channelId());
                 });
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
         if (channel.getType() == ChannelType.PRIVATE && (!readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
             log.warn("메시지 생성 실패 - Private 채널 비멤버 접근: userId={}, channelId={}", sender.getId(), channel.getId());
-            throw new NotPrivateChannelMemberException("가입되지 않은 user, channel", List.of(sender.getId(), channel.getId()));
+            throw new NotPrivateChannelMemberException(sender.getId(), channel.getId());
         }
 
         // 첨부파일 수정
@@ -94,7 +94,7 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> {
                     log.warn("메시지 조회 실패 - 존재하지 않는 messageId: {}", messageId);
-                    return new MessageNotFoundException("Message not found", messageId);
+                    return new MessageNotFoundException(messageId);
                 });
         return messageMapper.toDTO(msg);
     }
@@ -130,7 +130,7 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> {
                     log.warn("메시지 수정 실패 - 존재하지 않는 messageId: {}", messageId);
-                    return new MessageNotFoundException("Message not found", messageId);
+                    return new MessageNotFoundException(messageId);
                 });
 
         if (request.newContent() != null) {
@@ -147,7 +147,7 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageID)
                 .orElseThrow(() -> {
                     log.warn("메시지 삭제 실패 - 존재하지 않는 messageId: {}", messageID);
-                    return new MessageNotFoundException("Message not found", messageID);
+                    return new MessageNotFoundException(messageID);
                 });
 
         messageRepository.delete(msg);
