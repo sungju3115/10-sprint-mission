@@ -75,20 +75,20 @@
 # 유효성 검사
 
 - [X] Spring Validation 의존성을 추가하세요.
-- [ ] 주요 Request DTO에 제약 조건 관련 어노테이션을 추가하세요.
+- [X] 주요 Request DTO에 제약 조건 관련 어노테이션을 추가하세요.
     - @NotNull, @NotBlank, @Size, @Email 등
-- [ ] 컨트롤러에 @Valid 를 사용해 요청 데이터를 검증하세요.
-- [ ] 검증 실패 시 발생하는 MethodArgumentNotValidException을 전역 예외 핸들러에서 처리하세요.
-- [ ] 유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
+- [X] 컨트롤러에 @Valid 를 사용해 요청 데이터를 검증하세요.
+- [X] 검증 실패 시 발생하는 MethodArgumentNotValidException을 전역 예외 핸들러에서 처리하세요.
+- [X] 유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
 
 ---
 
 # Actuator
 
-- [ ] Spring Boot Actuator 의존성을 추가하세요.
-- [ ] 기본 Actuator 엔드포인트를 설정하세요.
+- [X] Spring Boot Actuator 의존성을 추가하세요.
+- [X] 기본 Actuator 엔드포인트를 설정하세요.
     - health, info, metrics, loggers
-- [ ] Actuator info를 위한 애플리케이션 정보를 추가하세요.
+- [X] Actuator info를 위한 애플리케이션 정보를 추가하세요.
     - 애플리케이션 이름: Discodeit
     - 애플리케이션 버전: 1.7.0
     - 자바 버전: 17
@@ -98,7 +98,7 @@
         - jpa: ddl-auto
         - storage 설정: type, path
         - multipart 설정: max-file-size, max-request-size
-- [ ] Spring Boot 서버를 실행 후 각종 정보를 확인해보세요.
+- [X] Spring Boot 서버를 실행 후 각종 정보를 확인해보세요.
     - /actuator/info
     - /actuator/metrics
     - /actuator/health
@@ -161,3 +161,6 @@
     - [ ] 채널 관련 API (생성, 수정, 삭제)
     - [ ] 메시지 관련 API (생성, 수정, 삭제, 목록 조회)
     - [ ] 각 테스트는 @Transactional을 활용해 독립적으로 실행하세요.
+
+### 궁금한 점
+- IoException 같은 것은 굳이 Custom 예외로 정의해서 반환해야할까??

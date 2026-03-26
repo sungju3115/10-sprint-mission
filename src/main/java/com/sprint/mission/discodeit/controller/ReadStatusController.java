@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public class ReadStatusController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public ResponseEntity<ReadStatusDTO> postReadStatus(@RequestBody ReadStatusCreateRequest request){
+    public ResponseEntity<ReadStatusDTO> postReadStatus(@Valid @RequestBody ReadStatusCreateRequest request){
         log.debug("메시지 읽음 상태 생성 - userId : {}, channelId: {}, lastReadAt: {}", request.userId(), request.channelId(), request.lastReadAt());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(readStatusService.create(request));
@@ -81,7 +82,7 @@ public class ReadStatusController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
+            @Valid @RequestBody ReadStatusUpdateRequest request
     ){
         log.debug("수정할 readStatusId : {}, lastReadAt : {}: ", readStatusId, request.newLastReadAt());
         return ResponseEntity.ok(readStatusService.update(readStatusId, request));

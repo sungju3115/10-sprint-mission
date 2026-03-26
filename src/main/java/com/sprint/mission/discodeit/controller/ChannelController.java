@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public class ChannelController {
                     schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelDTO postPublicChannel(@RequestBody ChannelCreateRequestPublic request){
+    public ChannelDTO postPublicChannel(@Valid @RequestBody ChannelCreateRequestPublic request){
         log.info("Public 채널 생성 요청 - name: {}", request.name());
         return channelService.createPublic(request);
     }
@@ -59,7 +60,7 @@ public class ChannelController {
                     schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelDTO postPrivateChannel(@RequestBody ChannelCreateRequestPrivate request){
+    public ChannelDTO postPrivateChannel(@Valid @RequestBody ChannelCreateRequestPrivate request){
         log.info("Private 채널 생성 요청 - participantIds: {}", request.participantIds());
         return channelService.createPrivate(request);
     }
@@ -154,7 +155,7 @@ public class ChannelController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID channelId,
-            @RequestBody ChannelUpdateRequest request
+            @Valid @RequestBody ChannelUpdateRequest request
     ){
         log.info("채널 수정 요청 - channelId: {}, newName: {}, newDescription: {}", channelId, request.newName(), request.newDescription());
         return channelService.update(channelId, request);

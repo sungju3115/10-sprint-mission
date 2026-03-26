@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
+import com.sprint.mission.discodeit.dto.auth.AuthServiceRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -52,7 +53,7 @@ public class AuthController {
                     )
             )
     })
-    ResponseEntity<UserDTO> login(@RequestBody AuthServiceRequest request){
+    ResponseEntity<UserDTO> login(@Valid @RequestBody AuthServiceRequest request){
         log.info("로그인 요청 - username: {}", request.username());
         return ResponseEntity.ok(authService.login(request));
     }

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -28,6 +29,14 @@ public class GlobalExceptionHandler {
             log.warn("[{}] {} - details: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex.getDetails());
         }
         return ResponseEntity.status(status).body(ErrorResponse.from(ex));
+    }
+
+    // Bean - Valid 검증 오류
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(Exception ex) {
+        log.warn("[MethodArgumentNotValidException] {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.from(HttpStatus.BAD_REQUEST, ex));
     }
 
     // 클라이언트 요청 오류

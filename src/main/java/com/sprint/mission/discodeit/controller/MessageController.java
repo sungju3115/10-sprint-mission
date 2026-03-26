@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -58,7 +59,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public MessageDTO postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest request,
+    public MessageDTO postMessage(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
                                   @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
                                        ){
         log.info("메시지 생성 요청 - channelId: {}, authorId: {}", request.channelId(), request.authorId());
@@ -105,7 +106,7 @@ public class MessageController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID messageId,
-            @RequestBody MessageUpdateRequest request){
+            @Valid @RequestBody MessageUpdateRequest request){
         log.info("메시지 수정 요청 - messageId: {}", messageId);
         return messageService.update(messageId, request);
     }
@@ -162,5 +163,3 @@ public class MessageController {
         return messageService.findMessagesByChannel(channelId, cursor, pageable);
     }
 }
-
-

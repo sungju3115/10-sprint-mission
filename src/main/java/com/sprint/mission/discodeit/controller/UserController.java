@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,7 +57,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserDTO postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
+    public UserDTO postUser(@Valid @RequestPart("userCreateRequest") UserCreateRequest request,
                             @RequestPart(value="profile", required = false) MultipartFile profile){
         log.info("사용자 생성 요청 - username: {}, email: {}", request.username(), request.email());
         return userService.create(request, Optional.ofNullable(profile));
@@ -87,7 +88,7 @@ public class UserController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest request,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value="profile", required = false) MultipartFile profile
     ){
         log.info("사용자 수정 요청 - userId: {}", userId);
@@ -189,7 +190,7 @@ public class UserController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequest request
+            @Valid @RequestBody UserStatusUpdateRequest request
     ){
         log.info("사용자 온라인 상태 업데이트 요청 - userId: {}, newLastActiveAt: {}", userId, request.newLastActiveAt());
         return ResponseEntity.ok(userStatusService.updateByUserID(userId, request));
