@@ -21,7 +21,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DiscodeitException.class)
     public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException ex) {
         HttpStatus status = ex.getErrorCode().getStatus();
-        log.warn("[{}] {} - details: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex.getDetails());
+        // 5XX 일 경우 error로 로그 남김
+        if (status.is5xxServerError()){
+            log.error("[{}] {} - details: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex.getDetails());
+        }else{
+            log.warn("[{}] {} - details: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex.getDetails());
+        }
         return ResponseEntity.status(status).body(ErrorResponse.from(ex));
     }
 
@@ -52,7 +57,7 @@ public class GlobalExceptionHandler {
     // 서버 내부 문제
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-        log.error("[Exception] 예상치 못한 오류 발생", ex);
+        log.error("[Exception] 예상치 못한 오류 발생 ", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.from(HttpStatus.INTERNAL_SERVER_ERROR, ex));
     }

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
+import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -71,8 +72,7 @@ public class MessageController {
                                 file.getBytes()
                         );
                     }catch (IOException e){
-                        log.error("파일 변환 중 오류 발생: {}", request.content(), e);
-                        throw new RuntimeException(e);
+                        throw new FileStorageException(file.getOriginalFilename());
                     }
                 }).toList())
                 .orElse(new ArrayList<>());

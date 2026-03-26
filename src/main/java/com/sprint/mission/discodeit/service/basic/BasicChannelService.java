@@ -112,7 +112,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
-        log.debug("사용자별 채널 목록 조회 - userId: {}", userID);
         List<Channel> channels = channelRepository.findVisibleChannelsByUserId(userID);
         if (channels.isEmpty()) {
             return List.of();

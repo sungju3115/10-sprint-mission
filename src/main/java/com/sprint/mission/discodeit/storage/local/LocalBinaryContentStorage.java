@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
+import com.sprint.mission.discodeit.exception.storage.DuplicateFileException;
+import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +34,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                 Files.createDirectories(root);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not initialize storage directory", e);
+            throw new RuntimeException("Failed to initialize local storage", e);
         }
     }
 
@@ -40,13 +42,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID id, byte[] content) {
         Path targetPath = resolvePath(id);
         if (Files.exists(targetPath)) {
-            throw new IllegalStateException("File already exists");
+            throw new DuplicateFileException(id);
         }
         try {
             Files.write(targetPath, content);
             return id;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
+            throw new FileStorageException(id.toString());
         }
     }
 

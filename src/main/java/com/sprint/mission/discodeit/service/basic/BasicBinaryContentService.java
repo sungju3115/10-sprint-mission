@@ -68,6 +68,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() -> new BinaryContentNotFound(contentID));
         binaryContentRepository.deleteById(binaryContent.getId());
+        log.info("파일 삭제 성공 - contentID: {}", contentID);
     }
 
     @Override

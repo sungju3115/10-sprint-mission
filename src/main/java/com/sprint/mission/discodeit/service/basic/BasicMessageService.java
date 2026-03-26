@@ -61,7 +61,7 @@ public class BasicMessageService implements MessageService {
         // 첨부파일 수정
         List<BinaryContent> attachments = requests.stream()
                 .map(req -> {
-                    log.debug("첨부파일 저장 - fileName: {}, contentType: {}", req.fileName(), req.contentType());
+                    log.debug("첨부파일 저장 - fileName: {}", req.fileName());
                     String fileName = req.fileName();
                     String contentType = req.contentType();
                     byte[] bytes = req.bytes();

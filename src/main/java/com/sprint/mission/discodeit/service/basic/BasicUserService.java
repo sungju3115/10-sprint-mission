@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -55,7 +56,7 @@ public class BasicUserService implements UserService {
                     user.updateProfile(savedBinaryContent);
                     log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
                  } catch (IOException e){
-                     throw new RuntimeException("파일 처리 실패: " + e.getMessage(), e);
+                     throw new FileStorageException(file.getOriginalFilename());
                  }
                 });
         UserStatus userStatus = new UserStatus(user);
@@ -75,7 +76,6 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
-        log.debug("전체 사용자 목록 조회");
         return userRepository.findAllWithProfileAndStatus().stream()
                 .map(userMapper::toDTO)
                 .toList();
@@ -113,7 +113,7 @@ public class BasicUserService implements UserService {
                         user.updateProfile(savedBinaryContent);
                         log.debug("프로필 이미지 수정 성공 - userId: {}, fileName: {}", userID, file.getOriginalFilename());
                     } catch (IOException e){
-                        throw new RuntimeException("파일 처리 실패: " + e.getMessage(), e);
+                        throw new FileStorageException(file.getOriginalFilename());
                     }
                 });
 

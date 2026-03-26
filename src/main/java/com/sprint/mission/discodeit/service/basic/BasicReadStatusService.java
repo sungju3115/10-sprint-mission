@@ -74,7 +74,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
         readStatus.updateLastReadTime();
         readStatusRepository.save(readStatus);
-        log.debug("ReadStatus 업데이트 성공 - readStatusId: {}", readStatusId);
+        log.info("ReadStatus 업데이트 성공 - readStatusId: {}", readStatusId);
         return readStatusMapper.toDto(readStatus);
     }
 
