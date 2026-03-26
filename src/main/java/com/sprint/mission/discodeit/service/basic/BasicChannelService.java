@@ -91,7 +91,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public ChannelDTO find(UUID id) {
-        log.debug("채널 단건 조회 - channelId: {}", id);
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new ChannelNotFoundException(id));
 

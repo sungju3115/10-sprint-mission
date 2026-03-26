@@ -99,7 +99,6 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant createdAt, Pageable pageable) {
-        log.debug("채널별 메시지 조회 - channelId: {}, cursor: {}", channelId, createdAt);
         Slice<MessageDTO> messageDTOSlice = messageRepository.findAllByChannelIdWithAuthor(channelId,
                 Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
                 .map(messageMapper::toDTO);

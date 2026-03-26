@@ -74,7 +74,7 @@
 
 # 유효성 검사
 
-- [ ] Spring Validation 의존성을 추가하세요.
+- [X] Spring Validation 의존성을 추가하세요.
 - [ ] 주요 Request DTO에 제약 조건 관련 어노테이션을 추가하세요.
     - @NotNull, @NotBlank, @Size, @Email 등
 - [ ] 컨트롤러에 @Valid 를 사용해 요청 데이터를 검증하세요.

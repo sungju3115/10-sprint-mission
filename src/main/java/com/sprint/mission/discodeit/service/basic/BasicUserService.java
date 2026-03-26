@@ -68,7 +68,6 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserDTO find(UUID userId) {
-        log.debug("사용자 단건 조회 - userId: {}", userId);
         return userMapper.toDTO(userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId)));
     }
