@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
@@ -27,29 +29,33 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDTO create(BinaryContentCreateRequest request) {
+        log.info("파일 업로드 요청 - fileName: {}, contentType: {}", request.fileName(), request.contentType());
         BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), (long) request.bytes().length);
-
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
         binaryContentStorage.put(savedBinaryContent.getId(), request.bytes());
 
+        log.info("파일 업로드 성공 - fileId: {}, fileName: {}", savedBinaryContent.getId(), savedBinaryContent.getFileName());
         return binaryContentMapper.toDTO(savedBinaryContent);
     }
 
     @Override
     @Transactional(readOnly = true)
     public BinaryContentDTO find(UUID contentID) {
+        log.debug("파일 조회 요청 - fileId: {}", contentID);
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
-                .orElseThrow(() -> new NoSuchElementException("BinaryContent not found: " + contentID));
+                .orElseThrow(() ->{
+                        log.warn("파일 조회 실패 - 존재하지 않는 fileId: {}", contentID);
+                        return new NoSuchElementException("BinaryContent not found: " + contentID);
+                });
+        log.debug("파일 조회 성공 - fileId: {}", binaryContent.getId());
         return binaryContentMapper.toDTO(binaryContent);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<BinaryContentDTO> findAllByIdIn(List<UUID> contentIDs) {
-        // 여기가 굳이 필요했던가...
-        if (contentIDs.isEmpty()) {
-            return new ArrayList<>();
-        }
+        log.debug("파일 다건 조회 요청 - contentIDs: {}", contentIDs);
 
         List<BinaryContent> binaryContents = binaryContentRepository.findAllById(contentIDs);
 
@@ -61,16 +67,24 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional
     public void delete(UUID contentID) {
+        log.debug("파일 삭제 요청 - contentID: {}", contentID);
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
-                .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
+                .orElseThrow(() -> {
+                    log.warn("파일 삭제 실패 - 존재하지 않는 contentID: {}", contentID);
+                    return new IllegalArgumentException("BinaryContent not found: " + contentID);
+                });
         binaryContentRepository.deleteById(binaryContent.getId());
     }
 
     @Override
     @Transactional
     public ResponseEntity<?> download(UUID binaryContentID){
+        log.debug("파일 다운로드 요청 - binaryContentID: {}", binaryContentID);
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
-                .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + binaryContentID));
+                .orElseThrow(() -> {
+                    log.warn("파일 다운로드 요청 실패 - 존재하지 않는 binaryContentID: {}", binaryContentID);
+                    return new IllegalArgumentException("BinaryContent not found: " + binaryContentID);
+                });
 
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
         return binaryContentStorage.download(dto);

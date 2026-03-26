@@ -53,7 +53,7 @@ public class AuthController {
             )
     })
     ResponseEntity<UserDTO> login(@RequestBody AuthServiceRequest request){
-        log.debug("로그인 시도: username={}", request.username());
+        log.info("로그인 요청 - username: {}", request.username());
         return ResponseEntity.ok(authService.login(request));
     }
 }
