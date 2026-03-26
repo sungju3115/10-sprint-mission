@@ -7,6 +7,10 @@ import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.exception.channel.ChannelAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateNotAllowed;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -39,7 +43,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
-        log.info("Public 채널 생성 요청 - name: {}, description: {}", request.name(), request.description());
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
                 .filter(ch -> ch.getType() == ChannelType.PUBLIC)
@@ -47,7 +50,7 @@ public class BasicChannelService implements ChannelService {
                 .findFirst()
                 .ifPresent(ch -> {
                     log.warn("Public 채널 생성 실패 - 이미 존재하는 channel name: {}", ch.getName());
-                    throw new IllegalArgumentException("Already Present name");
+                    throw new ChannelAlreadyExistsException("이미 존재하는 이름", ch.getName());
                 });
 
         Channel channel = channelMapper.toEntity(request);
@@ -63,7 +66,6 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelDTO createPrivate(ChannelCreateRequestPrivate request) {
-        log.info("Private 채널 생성 요청 - participantIds: {}", request.participantIds());
         // channel 생성
         Channel channel = channelMapper.toEntity(request);
 
@@ -74,18 +76,14 @@ public class BasicChannelService implements ChannelService {
         Channel savedChannel = channelRepository.save(channel);
 
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
-        log.debug("User의 ReadStatus 생성");
         for(UUID userId : users) {
-            log.trace("User 조회 - userId: {}", userId);
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> {
                         log.warn("Private 채널 생성 실패 - 존재하지 않는 userId: {}", userId);
-                        return new IllegalArgumentException("User not found: " + userId);
+                        return new UserNotFoundException("존재하지 않는 userId" , userId);
                     });
-            log.debug("User의 ReadStatus 생성 - userId: {}, channelId: {}", userId, savedChannel.getId());
             ReadStatus status = new ReadStatus(user, channel);
             readStatusRepository.save(status);
-            log.debug("읽음 정보 생성 성공");
             userList.add(userMapper.toDTO(user));
         }
 
@@ -102,7 +100,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("채널 조회 실패 - 존재하지 않는 channelId: {}", id);
-                    return new NoSuchElementException("Channel not found: " + id);
+                    return new ChannelNotFoundException("존재하지 않는 channelId", id);
                 });
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
@@ -163,17 +161,16 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
-        log.info("채널 수정 요청 - channelId: {}", channelID);
         // Private Channel일 경우 update 불가능
         Channel channel = channelRepository.findById(channelID)
                 .orElseThrow(() -> {
                     log.warn("채널 수정 실패 - 존재하지 않는 channelId: {}", channelID);
-                    return new NoSuchElementException("Channel not found: " + channelID);
+                    return new ChannelNotFoundException("존재하지 않는 channelId", channelID);
                 });
 
         if (channel.getType() == ChannelType.PRIVATE) {
             log.warn("채널 수정 실패 - Private 채널은 수정 불가: {}", channelID);
-            throw new IllegalArgumentException("Private Channel cannot be updated");
+            throw new PrivateChannelUpdateNotAllowed("Private 채널 수정 불가", channelID);
         }
 
         // 필드 업데이트
@@ -197,12 +194,11 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public void deleteChannel(UUID channelId) {
-        log.info("채널 삭제 요청 - channelId: {}", channelId);
         // 존재 확인
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> {
                     log.warn("채널 삭제 실패 - 존재하지 않는 channelId: {}", channelId);
-                    return new NoSuchElementException("Channel not found: " + channelId);
+                    return new ChannelNotFoundException("존재하지 않는 channelId", channelId);
                 });
         messageRepository.deleteAllByChannelId(channelId);
         readStatusRepository.deleteAllByChannelId(channelId);

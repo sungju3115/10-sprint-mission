@@ -4,6 +4,9 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
+import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -31,13 +34,9 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
-        log.info("사용자 생성 요청 - username: {}, email: {}", userRequest.username(), userRequest.email());
-
         // 이름, 이메일 유효성 검증
-        log.debug("이름, 이메일 유효성 검증 - username: {}, email:{}", userRequest.username(), userRequest.email());
         validateName(userRequest.username());
         validateEmail(userRequest.email());
-        log.debug("이름, 이메일 유효성 검증 성공 - username: {}, email:{}", userRequest.username(), userRequest.email());
 
         // user 생성 with DTO
         User user = new User(userRequest.username(), userRequest.email(), userRequest.password(), null);
@@ -60,9 +59,7 @@ public class BasicUserService implements UserService {
                      throw new RuntimeException("파일 처리 실패" + e.getMessage());
                  }
                 });
-        log.debug("User의 UserStatus 생성 - userId: {}", user.getId());
         UserStatus userStatus = new UserStatus(user);
-        log.debug("User의 UserStatus 생성 성공 - userId: {}, userStatusId: {}", user.getId(), userStatus.getId());
 
         User savedUser = userRepository.save(user);
         log.info("사용자 생성 성공 - userId: {}", savedUser.getId());
@@ -72,7 +69,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserDTO find(UUID userId) {
-        log.info("사용자 단건 조회 요청 - userId: {}", userId);
+        log.debug("사용자 단건 조회 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 조회 실패 - 존재하지 않는 userId: {}", userId);
@@ -84,7 +81,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
-        log.info("전체 사용자 목록 조회 요청");
+        log.debug("전체 사용자 목록 조회 요청");
         return userRepository.findAllWithProfileAndStatus().stream()
                 .map(userMapper::toDTO)
                 .toList();
@@ -94,28 +91,23 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
-        log.debug("사용자 수정 요청 - userId: {}", userID);
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> {
                     log.warn("사용자 수정 실패 - 존재하지 않는 userId: {}", userID);
-                    return new NoSuchElementException("User not found: " + userID);
+                    return new UserNotFoundException("User not found", userID);
                 });
 
         // user 이름 선택적 업데이트
         Optional.ofNullable(request.newUsername()).ifPresent(name -> {
             validateName(name);
-            log.debug("User의 이름 유효성 검증 성공 - userId: {}, name: {}", userID, name);
             user.updateName(name);
         });
 
         // user 이메일 선택적 업데이트
         Optional.ofNullable(request.newEmail()).ifPresent(email -> {
             validateEmail(email);
-            log.debug("User의 이메일 유효성 검증 성공 - userId: {}, email: {}", userID,email);
             user.updateEmail(email);
         });
-
-        log.debug("User의 이름, 이메일 수정 성공 - userId: {}", userID);
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
                     try{
@@ -143,11 +135,10 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public void deleteUser(UUID userId) {
-        log.info("사용자 삭제 요청 - userId: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 삭제 실패 - 존재하지 않는 userId: {}", userId);
-                    return new NoSuchElementException("User not found: " + userId);
+                    return new UserNotFoundException("User not found", userId);
                 });
 
         userRepository.deleteById(user.getId());
@@ -158,7 +149,7 @@ public class BasicUserService implements UserService {
     public void validateName(String username){
         if(userRepository.existsByUsername(username)){
             log.warn("사용자 생성/수정 실패 - 이미 존재하는 username: {}", username);
-            throw new IllegalArgumentException("Already Present name: " + username);
+            throw new AlreadyExistsNameException("이미 존재하는 username", username);
         }
     }
 
@@ -166,7 +157,7 @@ public class BasicUserService implements UserService {
     public void validateEmail(String email){
         if(userRepository.existsByEmail(email)){
             log.warn("사용자 생성/수정 실패 - 이미 존재하는 email: {}", email);
-            throw new IllegalArgumentException("Already Present email: " + email);
+            throw new AlreadyExistsEmailException("이미 존재하는 이메일", email);
         }
     }
 }

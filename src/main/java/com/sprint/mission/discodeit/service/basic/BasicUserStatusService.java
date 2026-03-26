@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -35,7 +37,7 @@ public class BasicUserStatusService implements UserStatusService {
         User user = userRepository.findById(request.userID())
                 .orElseThrow(() -> {
                     log.warn("UserStatus 생성 실패 - 존재하지 않는 userId: {}", request.userID());
-                    return new NoSuchElementException("User not found: " + request.userID());
+                    return new UserNotFoundException("User not found", request.userID());
                 });
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
@@ -53,19 +55,19 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional(readOnly = true)
     @Override
     public UserStatusDTO find(UUID userStatusId){
-        log.info("UserStatus 단건 조회 요청 - userStatusId: {}", userStatusId);
+        log.debug("UserStatus 단건 조회 요청 - userStatusId: {}", userStatusId);
         return userStatusRepository.findById(userStatusId)
                 .map(userStatusMapper::toDTO)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 조회 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new NoSuchElementException("UserStatus not found: " + userStatusId);
+                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
                 });
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserStatusDTO> findAll(){
-        log.info("전체 UserStatus 조회 요청");
+        log.debug("전체 UserStatus 조회 요청");
         return userStatusRepository.findAll().stream()
                 .map(userStatusMapper::toDTO)
                 .toList();
@@ -79,7 +81,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new NoSuchElementException("UserStatus not found: " + userStatusId);
+                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
                 });
         userStatus.updateLastActiveAt(newLastActiveAt);
         userStatusRepository.save(userStatus);
@@ -93,8 +95,8 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("UserStatus 업데이트 요청 - userId: {}", userId);
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> {
-                    log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userId: {}", userId);
-                    return new NoSuchElementException("UserStatus not found: " + userId);
+                    log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatus, userId: {}", userId);
+                    return new UserStatusNotFoundException("UserStatus not found by userId", userId);
                 });
         userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
@@ -109,7 +111,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> {
                     log.warn("UserStatus 삭제 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new NoSuchElementException("UserStatus not found: " + userStatusId);
+                    return new UserStatusNotFoundException("UserStatus not found", userStatusId);
                 });
         userStatusRepository.deleteById(userStatus.getId());
         log.debug("UserStatus 삭제 성공 - userStatusId: {}", userStatusId);

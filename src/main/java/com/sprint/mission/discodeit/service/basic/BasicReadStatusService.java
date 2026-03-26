@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusUpdateReque
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -39,13 +42,13 @@ public class BasicReadStatusService implements ReadStatusService {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 생성 실패 - 존재하지 않는 userId: {}", request.userId());
-                    return new NoSuchElementException("User not found: " + request.userId());
+                    return new UserNotFoundException("User not found", request.userId());
                 });
 
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 생성 실패 - 존재하지 않는 channelId: {}", request.channelId());
-                    return new NoSuchElementException("Channel not found: " + request.channelId());
+                    return new ChannelNotFoundException("Channel not found", request.channelId());
                 });
 
         ReadStatus readStatus = new ReadStatus(user, channel);
@@ -57,11 +60,11 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional(readOnly = true)
     public ReadStatusDTO find(UUID readStatusID){
-        log.info("ReadStatus 단건 조회 요청 - readStatusId: {}", readStatusID);
+        log.debug("ReadStatus 단건 조회 요청 - readStatusId: {}", readStatusID);
         ReadStatus readStatus = readStatusRepository.findById(readStatusID)
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 조회 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
-                    return new NoSuchElementException("ReadStatus not found: " + readStatusID);
+                    return new ReadStatusNotFoundException("ReadStatus not found", readStatusID);
                 });
 
         return readStatusMapper.toDto(readStatus);
@@ -70,7 +73,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional(readOnly = true)
     public List<ReadStatusDTO> findAllByUserId(UUID userID){
-        log.info("사용자별 ReadStatus 조회 요청 - userId: {}", userID);
+        log.debug("사용자별 ReadStatus 조회 요청 - userId: {}", userID);
         return readStatusRepository.findAllByUser_Id(userID).stream()
                 .map(readStatusMapper::toDto).toList();
     }
@@ -82,7 +85,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> {
                     log.warn("ReadStatus 업데이트 실패 - 존재하지 않는 readStatusId: {}", readStatusId);
-                    return new IllegalArgumentException("ReadStatus not found: " + readStatusId);
+                    return new ReadStatusNotFoundException("ReadStatus not found", readStatusId);
                 });
 
         readStatus.updateLastReadTime();
@@ -97,7 +100,7 @@ public class BasicReadStatusService implements ReadStatusService {
         log.debug("ReadStatus 삭제 요청 - readStatusId: {}", readStatusID);
         if(!readStatusRepository.existsById(readStatusID)){
             log.warn("ReadStatus 삭제 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
-            throw new NoSuchElementException("ReadStatus not found: " + readStatusID);
+            throw new ReadStatusNotFoundException("ReadStatus not found", readStatusID);
         }
         log.debug("ReadStatus 삭제 성공 - readStatusId:");
         readStatusRepository.deleteById(readStatusID);

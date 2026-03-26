@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.NotPrivateChannelMemberException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -43,23 +47,22 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageDTO create(MessageCreateRequest request, List<BinaryContentCreateRequest> requests) {
-        log.info("메시지 생성 요청 - channelId: {}, authorId: {}", request.channelId(), request.authorId());
         // user, channel 존재 check
         User sender = userRepository.findById(request.authorId())
                 .orElseThrow(() -> {
                     log.warn("메시지 생성 실패 - 존재하지 않는 authorId: {}", request.authorId());
-                    return new NoSuchElementException("User not found: " + request.authorId());
+                    return new UserNotFoundException("User not found: ", request.authorId());
                 });
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> {
                     log.warn("메시지 생성 실패 - 존재하지 않는 channelId: {}", request.channelId());
-                    return new NoSuchElementException("Channel not found: " + request.channelId());
+                    return new ChannelNotFoundException("Channel not found: ", request.channelId());
                 });
 
         // Channel이 private일 경우 sender가 해당 channel의 member인지 check
         if (channel.getType() == ChannelType.PRIVATE && (!readStatusRepository.existsByUser_IdAndChannel_Id(sender.getId(), channel.getId()))) {
             log.warn("메시지 생성 실패 - Private 채널 비멤버 접근: userId={}, channelId={}", sender.getId(), channel.getId());
-            throw new IllegalArgumentException("User is not in this channel." + request.channelId());
+            throw new NotPrivateChannelMemberException("가입되지 않은 user, channel", List.of(sender.getId(), channel.getId()));
         }
 
         // 첨부파일 수정
@@ -87,11 +90,11 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional(readOnly = true)
     public MessageDTO find(UUID messageId) {
-        log.info("메시지 단건 조회 요청 - messageId: {}", messageId);
+        log.debug("메시지 단건 조회 요청 - messageId: {}", messageId);
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> {
                     log.warn("메시지 조회 실패 - 존재하지 않는 messageId: {}", messageId);
-                    return new IllegalArgumentException("Message not found: " + messageId);
+                    return new MessageNotFoundException("Message not found", messageId);
                 });
         return messageMapper.toDTO(msg);
     }
@@ -124,11 +127,10 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageDTO update(UUID messageId, MessageUpdateRequest request) {
-        log.info("메시지 수정 요청 - messageId: {}", messageId);
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> {
                     log.warn("메시지 수정 실패 - 존재하지 않는 messageId: {}", messageId);
-                    return new NoSuchElementException("Message not found: " + messageId);
+                    return new MessageNotFoundException("Message not found", messageId);
                 });
 
         if (request.newContent() != null) {
@@ -142,11 +144,10 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public void deleteMessage(UUID messageID) {
-        log.info("메시지 삭제 요청 - messageId: {}", messageID);
         Message msg = messageRepository.findById(messageID)
                 .orElseThrow(() -> {
                     log.warn("메시지 삭제 실패 - 존재하지 않는 messageId: {}", messageID);
-                    return new IllegalArgumentException("Message not found: " + messageID);
+                    return new MessageNotFoundException("Message not found", messageID);
                 });
 
         messageRepository.delete(msg);

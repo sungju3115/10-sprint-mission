@@ -34,40 +34,40 @@
     - [X] 파일은 `{프로젝트 루트}/.logs` 경로에 저장되도록 설정하세요.
     - [X] 로그 파일은 일자별로 롤링되도록 구성하세요.
     - [X] 로그 파일은 30일간 보관하도록 구성하세요.
-- [ ] 서비스 레이어와 컨트롤러 레이어의 주요 메소드에 로깅을 추가하세요.
-    - [ ] 로깅 레벨을 적절히 사용하세요: ERROR, WARN, INFO, DEBUG
-    - [ ] 다음과 같은 메소드에 로깅을 추가하세요:
-        - [ ] 사용자 생성/수정/삭제
-        - [ ] 채널 생성/수정/삭제
-        - [ ] 메시지 생성/수정/삭제
-        - [ ] 파일 업로드/다운로드
+- [X] 서비스 레이어와 컨트롤러 레이어의 주요 메소드에 로깅을 추가하세요.
+    - [X] 로깅 레벨을 적절히 사용하세요: ERROR, WARN, INFO, DEBUG
+    - [X] 다음과 같은 메소드에 로깅을 추가하세요:
+        - [X] 사용자 생성/수정/삭제
+        - [X] 채널 생성/수정/삭제
+        - [X] 메시지 생성/수정/삭제
+        - [X] 파일 업로드/다운로드
 
 ---
 
 # 예외 처리 고도화
 
-- [ ] 커스텀 예외를 설계하고 구현하세요.
+- [X] 커스텀 예외를 설계하고 구현하세요.
     - 패키지명: `com.sprint.mission.discodeit.exception[.{도메인}]`
-- [ ] ErrorCode Enum 클래스를 통해 예외 코드명과 메시지를 정의하세요.
+- [X] ErrorCode Enum 클래스를 통해 예외 코드명과 메시지를 정의하세요.
     - 아래는 예시입니다. 필요하다고 판단되는 다양한 코드를 정의하세요.
-- [ ] 모든 예외의 기본이 되는 DiscodeitException 클래스를 정의하세요.
+- [X] 모든 예외의 기본이 되는 DiscodeitException 클래스를 정의하세요.
     - `details`는 예외 발생 상황에 대한 추가정보를 저장하기 위한 속성입니다.
     - 예시:
         - 조회 시도한 사용자의 ID 정보
         - 업데이트 시도한 PRIVATE 채널의 ID 정보
-- [ ] DiscodeitException을 상속하는 주요 도메인 별 메인 예외 클래스를 정의하세요.
+- [X] DiscodeitException을 상속하는 주요 도메인 별 메인 예외 클래스를 정의하세요.
     - UserException, ChannelException 등
     - 실제로 활용되는 클래스라기보다는 예외 클래스의 계층 구조를 명확하게 하기 위한 클래스 입니다.
-- [ ] 도메인 메인 예외 클래스를 상속하는 구체적인 예외 클래스를 정의하세요.
+- [X] 도메인 메인 예외 클래스를 상속하는 구체적인 예외 클래스를 정의하세요.
     - UserNotFoundException, UserAlreadyExistException 등 필요한 예외를 정의하세요.
-- [ ] 기존에 구현했던 예외를 커스텀 예외로 대체하세요.
+- [X] 기존에 구현했던 예외를 커스텀 예외로 대체하세요.
     - NoSuchElementException
     - IllegalArgumentException
     - …
-- [ ] ErrorResponse를 통해 일관된 예외 응답을 정의하세요.
+- [X] ErrorResponse를 통해 일관된 예외 응답을 정의하세요.
     - `int status`: HTTP 상태코드
     - `String exceptionType`: 발생한 예외의 클래스 이름
-- [ ] 앞서 정의한 ErrorResponse와 @RestControllerAdvice를 활용해 예외를 처리하는 예외 핸들러를 구현하세요.
+- [X] 앞서 정의한 ErrorResponse와 @RestControllerAdvice를 활용해 예외를 처리하는 예외 핸들러를 구현하세요.
     - 모든 핸들러는 일관된 응답(ErrorResponse)을 가져야 합니다.
 
 ---

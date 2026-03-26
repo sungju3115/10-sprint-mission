@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFound;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -46,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() ->{
                         log.warn("파일 조회 실패 - 존재하지 않는 fileId: {}", contentID);
-                        return new NoSuchElementException("BinaryContent not found: " + contentID);
+                        return new BinaryContentNotFound("존재하지 않는 fileId", contentID);
                 });
         log.debug("파일 조회 성공 - fileId: {}", binaryContent.getId());
         return binaryContentMapper.toDTO(binaryContent);
@@ -71,7 +72,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() -> {
                     log.warn("파일 삭제 실패 - 존재하지 않는 contentID: {}", contentID);
-                    return new IllegalArgumentException("BinaryContent not found: " + contentID);
+                    return new BinaryContentNotFound("존재하지 않는 contentID", contentID);
                 });
         binaryContentRepository.deleteById(binaryContent.getId());
     }
@@ -83,7 +84,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
                 .orElseThrow(() -> {
                     log.warn("파일 다운로드 요청 실패 - 존재하지 않는 binaryContentID: {}", binaryContentID);
-                    return new IllegalArgumentException("BinaryContent not found: " + binaryContentID);
+                    return new BinaryContentNotFound("존재하지 않는 binaryContentId", binaryContentID);
                 });
 
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
