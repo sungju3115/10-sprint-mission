@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -51,6 +53,7 @@ public class AuthController {
             )
     })
     ResponseEntity<UserDTO> login(@RequestBody AuthServiceRequest request){
+        log.debug("로그인 시도: username={}", request.username());
         return ResponseEntity.ok(authService.login(request));
     }
 }

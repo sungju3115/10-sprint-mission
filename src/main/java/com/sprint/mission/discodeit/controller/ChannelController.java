@@ -15,12 +15,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
@@ -41,6 +43,7 @@ public class ChannelController {
             )
     )
     public ChannelDTO postPublicChannel(@RequestBody ChannelCreateRequestPublic request){
+        log.info("Public 채널 생성 요청 - name: {}", request.name());
         return channelService.createPublic(request);
     }
 
@@ -57,6 +60,7 @@ public class ChannelController {
             )
     )
     public ChannelDTO postPrivateChannel(@RequestBody ChannelCreateRequestPrivate request){
+        log.info("Private 채널 생성 요청 - participantIds: {}", request.participantIds());
         return channelService.createPrivate(request);
     }
 
@@ -89,6 +93,7 @@ public class ChannelController {
             )
             @PathVariable UUID channelId
     ){
+        log.debug("채널 단건 조회 요청 - channelId: {}", channelId);
         return channelService.find(channelId);
     }
 
@@ -110,6 +115,7 @@ public class ChannelController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @RequestParam UUID userId){
+        log.debug("사용자별 채널 목록 조회 요청 - userId: {}", userId);
         return channelService.findAllByUserID(userId);
     }
 
@@ -150,6 +156,7 @@ public class ChannelController {
             @PathVariable UUID channelId,
             @RequestBody ChannelUpdateRequest request
     ){
+        log.info("채널 수정 요청 - channelId: {}, newName: {}, newDescription: {}", channelId, request.newName(), request.newDescription());
         return channelService.update(channelId, request);
     }
 
@@ -178,6 +185,7 @@ public class ChannelController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID channelId){
+        log.info("채널 삭제 요청 - channelId: {}", channelId);
         channelService.deleteChannel(channelId);
     }
 }

@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -56,6 +58,7 @@ public class UserController {
     })
     public UserDTO postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
                             @RequestPart(value="profile", required = false) MultipartFile profile){
+        log.info("사용자 생성 요청 - username: {}, email: {}", request.username(), request.email());
         return userService.create(request, Optional.ofNullable(profile));
     }
 
@@ -87,6 +90,7 @@ public class UserController {
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value="profile", required = false) MultipartFile profile
     ){
+        log.info("사용자 수정 요청 - userId: {}", userId);
         return userService.update(userId, request, Optional.ofNullable(profile));
     }
 
@@ -114,6 +118,7 @@ public class UserController {
             )
             @PathVariable UUID userId
     ){
+        log.info("사용자 삭제 요청 - userId: {}", userId);
         userService.deleteUser(userId);
     }
 
@@ -143,6 +148,7 @@ public class UserController {
             )
             @PathVariable UUID userId
     ){
+        log.debug("사용자 단건 조회 요청 - userId: {}", userId);
         return userService.find(userId);
     }
 
@@ -155,6 +161,7 @@ public class UserController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))
     )
     public ResponseEntity<List<UserDTO>> getAllUsers(){
+        log.debug("전체 사용자 목록 조회 요청");
         List<UserDTO> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
@@ -184,6 +191,7 @@ public class UserController {
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest request
     ){
+        log.info("사용자 온라인 상태 업데이트 요청 - userId: {}, newLastActiveAt: {}", userId, request.newLastActiveAt());
         return ResponseEntity.ok(userStatusService.updateByUserID(userId, request));
     }
 

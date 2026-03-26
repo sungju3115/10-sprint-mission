@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
@@ -58,6 +60,7 @@ public class MessageController {
     public MessageDTO postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest request,
                                   @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
                                        ){
+        log.info("메시지 생성 요청 - channelId: {}, authorId: {}", request.channelId(), request.authorId());
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
                 .map(files -> files.stream()
                 .map(file -> {
@@ -68,6 +71,7 @@ public class MessageController {
                                 file.getBytes()
                         );
                     }catch (IOException e){
+                        log.error("파일 변환 중 오류 발생: {}", request.content(), e);
                         throw new RuntimeException(e);
                     }
                 }).toList())
@@ -102,6 +106,7 @@ public class MessageController {
             )
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request){
+        log.info("메시지 수정 요청 - messageId: {}", messageId);
         return messageService.update(messageId, request);
     }
 
@@ -129,6 +134,7 @@ public class MessageController {
             )
             @PathVariable UUID messageId
     ){
+        log.info("메시지 삭제 요청 - messageId: {}", messageId);
         messageService.deleteMessage(messageId);
     }
 
@@ -152,6 +158,7 @@ public class MessageController {
     public PageResponse<MessageDTO> getAllMessages(@RequestParam UUID channelId,
                                                    @RequestParam(value = "cursor", required = false) Instant cursor,
                                                    Pageable pageable){
+        log.debug("채널 메시지 목록 조회 요청 - channelId: {}, cursor: {}, pageable: {}", channelId, cursor, pageable);
         return messageService.findMessagesByChannel(channelId, cursor, pageable);
     }
 }
