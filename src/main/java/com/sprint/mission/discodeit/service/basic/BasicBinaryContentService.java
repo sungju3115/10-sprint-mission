@@ -30,7 +30,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDTO create(BinaryContentCreateRequest request) {
-        log.info("파일 업로드 요청 - fileName: {}, contentType: {}", request.fileName(), request.contentType());
         BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), (long) request.bytes().length);
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
 
@@ -45,10 +44,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentDTO find(UUID contentID) {
         log.debug("파일 조회 요청 - fileId: {}", contentID);
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
-                .orElseThrow(() ->{
-                        log.warn("파일 조회 실패 - 존재하지 않는 fileId: {}", contentID);
-                        return new BinaryContentNotFound(contentID);
-                });
+                .orElseThrow(() -> new BinaryContentNotFound(contentID));
         log.debug("파일 조회 성공 - fileId: {}", binaryContent.getId());
         return binaryContentMapper.toDTO(binaryContent);
     }
@@ -70,10 +66,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID contentID) {
         log.debug("파일 삭제 요청 - contentID: {}", contentID);
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
-                .orElseThrow(() -> {
-                    log.warn("파일 삭제 실패 - 존재하지 않는 contentID: {}", contentID);
-                    return new BinaryContentNotFound(contentID);
-                });
+                .orElseThrow(() -> new BinaryContentNotFound(contentID));
         binaryContentRepository.deleteById(binaryContent.getId());
     }
 
@@ -82,10 +75,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public ResponseEntity<?> download(UUID binaryContentID){
         log.debug("파일 다운로드 요청 - binaryContentID: {}", binaryContentID);
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
-                .orElseThrow(() -> {
-                    log.warn("파일 다운로드 요청 실패 - 존재하지 않는 binaryContentID: {}", binaryContentID);
-                    return new BinaryContentNotFound(binaryContentID);
-                });
+                .orElseThrow(() -> new BinaryContentNotFound(binaryContentID));
 
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
         return binaryContentStorage.download(dto);

@@ -55,8 +55,7 @@ public class BasicUserService implements UserService {
                     user.updateProfile(savedBinaryContent);
                     log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
                  } catch (IOException e){
-                     log.error("프로필 이미지 저장 실패 - fileName: {}", file.getOriginalFilename(), e);
-                     throw new RuntimeException("파일 처리 실패" + e.getMessage());
+                     throw new RuntimeException("파일 처리 실패: " + e.getMessage(), e);
                  }
                 });
         UserStatus userStatus = new UserStatus(user);
@@ -69,19 +68,15 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserDTO find(UUID userId) {
-        log.debug("사용자 단건 조회 요청 - userId: {}", userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("사용자 조회 실패 - 존재하지 않는 userId: {}", userId);
-                    return new UserNotFoundException(userId);
-                });
-        return userMapper.toDTO(user);
+        log.debug("사용자 단건 조회 - userId: {}", userId);
+        return userMapper.toDTO(userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId)));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
-        log.debug("전체 사용자 목록 조회 요청");
+        log.debug("전체 사용자 목록 조회");
         return userRepository.findAllWithProfileAndStatus().stream()
                 .map(userMapper::toDTO)
                 .toList();
@@ -92,10 +87,7 @@ public class BasicUserService implements UserService {
     @Transactional
     public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         User user = userRepository.findById(userID)
-                .orElseThrow(() -> {
-                    log.warn("사용자 수정 실패 - 존재하지 않는 userId: {}", userID);
-                    return new UserNotFoundException(userID);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userID));
 
         // user 이름 선택적 업데이트
         Optional.ofNullable(request.newUsername()).ifPresent(name -> {
@@ -120,10 +112,9 @@ public class BasicUserService implements UserService {
                         BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
                         binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
                         user.updateProfile(savedBinaryContent);
-                        log.debug("프로필 이미지 수정 성공 - userId:{}, fileName: {}", userID, file.getOriginalFilename());
+                        log.debug("프로필 이미지 수정 성공 - userId: {}, fileName: {}", userID, file.getOriginalFilename());
                     } catch (IOException e){
-                        log.error("프로필 이미지 수정 실패 - fileName: {}", file.getOriginalFilename(), e);
-                        throw new RuntimeException("파일 처리 실패" + e.getMessage());
+                        throw new RuntimeException("파일 처리 실패: " + e.getMessage(), e);
                     }
                 });
 
@@ -136,10 +127,7 @@ public class BasicUserService implements UserService {
     @Transactional
     public void deleteUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("사용자 삭제 실패 - 존재하지 않는 userId: {}", userId);
-                    return new UserNotFoundException("User not found", userId);
-                });
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         userRepository.deleteById(user.getId());
         log.info("사용자 삭제 성공 - userId: {}", userId);
@@ -148,7 +136,6 @@ public class BasicUserService implements UserService {
     // User 이름 유효성 검증
     public void validateName(String username){
         if(userRepository.existsByUsername(username)){
-            log.warn("사용자 생성/수정 실패 - 이미 존재하는 username: {}", username);
             throw new AlreadyExistsNameException(username);
         }
     }
@@ -156,7 +143,6 @@ public class BasicUserService implements UserService {
     // 이메일 유효성 검증
     public void validateEmail(String email){
         if(userRepository.existsByEmail(email)){
-            log.warn("사용자 생성/수정 실패 - 이미 존재하는 email: {}", email);
             throw new AlreadyExistsEmailException(email);
         }
     }

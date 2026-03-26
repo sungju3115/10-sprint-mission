@@ -26,13 +26,9 @@ public class BasicAuthService implements AuthService {
     @Transactional(readOnly = true)
     public UserDTO login(AuthServiceRequest request){
         User user = userRepository.findByUsernameWithProfile(request.username())
-                .orElseThrow(() -> {
-                    log.warn("로그인 실패 - 존재하지 않는 사용자: {}", request.username());
-                    return new UserNotFoundException(request.username());
-                });
+                .orElseThrow(() -> new UserNotFoundException(request.username()));
 
         if(!(user.getPassword().equals(request.password()))){
-            log.warn("로그인 실패 - 비밀번호 불일치: {}", request.username());
             throw new InvalidPasswordException(request.username());
         }
 

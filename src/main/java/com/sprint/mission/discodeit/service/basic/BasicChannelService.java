@@ -49,7 +49,6 @@ public class BasicChannelService implements ChannelService {
                 .filter(ch -> ch.getName().equals(request.name()))
                 .findFirst()
                 .ifPresent(ch -> {
-                    log.warn("Public 채널 생성 실패 - 이미 존재하는 channel name: {}", ch.getName());
                     throw new ChannelAlreadyExistsException(ch.getName());
                 });
 
@@ -78,10 +77,7 @@ public class BasicChannelService implements ChannelService {
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
         for(UUID userId : users) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> {
-                        log.warn("Private 채널 생성 실패 - 존재하지 않는 userId: {}", userId);
-                        return new UserNotFoundException(userId);
-                    });
+                    .orElseThrow(() -> new UserNotFoundException(userId));
             ReadStatus status = new ReadStatus(user, channel);
             readStatusRepository.save(status);
             userList.add(userMapper.toDTO(user));
@@ -95,13 +91,9 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public ChannelDTO find(UUID id) {
-        log.debug("채널 단건 조회 요청 - channelId: {}", id);
-        // channel 조회
+        log.debug("채널 단건 조회 - channelId: {}", id);
         Channel channel = channelRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("채널 조회 실패 - 존재하지 않는 channelId: {}", id);
-                    return new ChannelNotFoundException(id);
-                });
+                .orElseThrow(() -> new ChannelNotFoundException(id));
 
         // 최근 메시지의 시간 -> channel에서 메시지 생성 안되어 있을 수도 있지 않나?
         Instant lastCreatedAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(id);
@@ -121,7 +113,7 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
-        log.debug("사용자별 채널 목록 조회 요청 - userId: {}", userID);
+        log.debug("사용자별 채널 목록 조회 - userId: {}", userID);
         List<Channel> channels = channelRepository.findVisibleChannelsByUserId(userID);
         if (channels.isEmpty()) {
             return List.of();
@@ -163,13 +155,9 @@ public class BasicChannelService implements ChannelService {
     public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
         Channel channel = channelRepository.findById(channelID)
-                .orElseThrow(() -> {
-                    log.warn("채널 수정 실패 - 존재하지 않는 channelId: {}", channelID);
-                    return new ChannelNotFoundException(channelID);
-                });
+                .orElseThrow(() -> new ChannelNotFoundException(channelID));
 
         if (channel.getType() == ChannelType.PRIVATE) {
-            log.warn("채널 수정 실패 - Private 채널은 수정 불가: {}", channelID);
             throw new PrivateChannelUpdateNotAllowed(channelID);
         }
 
@@ -196,10 +184,7 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         // 존재 확인
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> {
-                    log.warn("채널 삭제 실패 - 존재하지 않는 channelId: {}", channelId);
-                    return new ChannelNotFoundException(channelId);
-                });
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
         messageRepository.deleteAllByChannelId(channelId);
         readStatusRepository.deleteAllByChannelId(channelId);
         channelRepository.deleteById(channelId);

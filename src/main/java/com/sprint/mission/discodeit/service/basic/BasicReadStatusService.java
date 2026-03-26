@@ -37,18 +37,11 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional
     public ReadStatusDTO create(ReadStatusCreateRequest request){
-        log.info("ReadStatus 생성 요청 - userId: {}, channelId: {}", request.userId(), request.channelId());
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> {
-                    log.warn("ReadStatus 생성 실패 - 존재하지 않는 userId: {}", request.userId());
-                    return new UserNotFoundException(request.userId());
-                });
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
         Channel channel = channelRepository.findById(request.channelId())
-                .orElseThrow(() -> {
-                    log.warn("ReadStatus 생성 실패 - 존재하지 않는 channelId: {}", request.channelId());
-                    return new ChannelNotFoundException(request.channelId());
-                });
+                .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
         ReadStatus readStatus = new ReadStatus(user, channel);
         ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
@@ -59,20 +52,15 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional(readOnly = true)
     public ReadStatusDTO find(UUID readStatusID){
-        log.debug("ReadStatus 단건 조회 요청 - readStatusId: {}", readStatusID);
-        ReadStatus readStatus = readStatusRepository.findById(readStatusID)
-                .orElseThrow(() -> {
-                    log.warn("ReadStatus 조회 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
-                    return new ReadStatusNotFoundException(readStatusID);
-                });
-
-        return readStatusMapper.toDto(readStatus);
+        log.debug("ReadStatus 단건 조회 - readStatusId: {}", readStatusID);
+        return readStatusMapper.toDto(readStatusRepository.findById(readStatusID)
+                .orElseThrow(() -> new ReadStatusNotFoundException(readStatusID)));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ReadStatusDTO> findAllByUserId(UUID userID){
-        log.debug("사용자별 ReadStatus 조회 요청 - userId: {}", userID);
+        log.debug("사용자별 ReadStatus 조회 - userId: {}", userID);
         return readStatusRepository.findAllByUser_Id(userID).stream()
                 .map(readStatusMapper::toDto).toList();
     }
@@ -80,12 +68,9 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional
     public ReadStatusDTO update(UUID readStatusId, ReadStatusUpdateRequest request){
-        log.debug("ReadStatus 업데이트 요청 - readStatusId: {}", readStatusId);
+        log.debug("ReadStatus 업데이트 - readStatusId: {}", readStatusId);
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> {
-                    log.warn("ReadStatus 업데이트 실패 - 존재하지 않는 readStatusId: {}", readStatusId);
-                    return new ReadStatusNotFoundException(readStatusId);
-                });
+                .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
         readStatus.updateLastReadTime();
         readStatusRepository.save(readStatus);
@@ -96,12 +81,10 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional
     public void delete(UUID readStatusID){
-        log.debug("ReadStatus 삭제 요청 - readStatusId: {}", readStatusID);
         if(!readStatusRepository.existsById(readStatusID)){
-            log.warn("ReadStatus 삭제 실패 - 존재하지 않는 readStatusId: {}", readStatusID);
             throw new ReadStatusNotFoundException(readStatusID);
         }
-        log.debug("ReadStatus 삭제 성공 - readStatusId:");
         readStatusRepository.deleteById(readStatusID);
+        log.info("ReadStatus 삭제 성공 - readStatusId: {}", readStatusID);
     }
 }

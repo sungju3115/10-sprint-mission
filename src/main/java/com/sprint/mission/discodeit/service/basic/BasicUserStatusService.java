@@ -33,12 +33,8 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     @Transactional
     public UserStatusDTO create(UserStatusCreateRequest request) {
-        log.info("UserStatus 생성 요청 - userId: {}", request.userID());
         User user = userRepository.findById(request.userID())
-                .orElseThrow(() -> {
-                    log.warn("UserStatus 생성 실패 - 존재하지 않는 userId: {}", request.userID());
-                    return new UserNotFoundException(request.userID());
-                });
+                .orElseThrow(() -> new UserNotFoundException(request.userID()));
 
         // 같은 userId에 대한 UserStatus 중복 생성 방지
         if(user.getUserStatus() != null){
@@ -55,19 +51,16 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional(readOnly = true)
     @Override
     public UserStatusDTO find(UUID userStatusId){
-        log.debug("UserStatus 단건 조회 요청 - userStatusId: {}", userStatusId);
+        log.debug("UserStatus 단건 조회 - userStatusId: {}", userStatusId);
         return userStatusRepository.findById(userStatusId)
                 .map(userStatusMapper::toDTO)
-                .orElseThrow(() -> {
-                    log.warn("UserStatus 조회 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException(userStatusId);
-                });
+                .orElseThrow(() -> new UserStatusNotFoundException(userStatusId));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserStatusDTO> findAll(){
-        log.debug("전체 UserStatus 조회 요청");
+        log.debug("전체 UserStatus 조회");
         return userStatusRepository.findAll().stream()
                 .map(userStatusMapper::toDTO)
                 .toList();
@@ -76,44 +69,35 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     @Override
     public UserStatusDTO update(UUID userStatusId, UserStatusUpdateRequest request) {
-        log.debug("UserStatus 업데이트 요청 - userStatusId: {}", userStatusId);
+        log.debug("UserStatus 업데이트 - userStatusId: {}", userStatusId);
         Instant newLastActiveAt = request.newLastActiveAt();
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> {
-                    log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException(userStatusId);
-                });
+                .orElseThrow(() -> new UserStatusNotFoundException(userStatusId));
         userStatus.updateLastActiveAt(newLastActiveAt);
         userStatusRepository.save(userStatus);
-        log.debug("UserStatus 업데이트 성공 - userStatusId: {}", userStatusId);
+        log.info("UserStatus 업데이트 성공 - userStatusId: {}", userStatusId);
         return userStatusMapper.toDTO(userStatus);
     }
 
     @Override
     @Transactional
     public UserStatusDTO updateByUserID(UUID userId, UserStatusUpdateRequest request) {
-        log.debug("UserStatus 업데이트 요청 - userId: {}", userId);
+        log.debug("UserStatus 업데이트 - userId: {}", userId);
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> {
-                    log.warn("UserStatus 업데이트 실패 - 존재하지 않는 userStatus, userId: {}", userId);
-                    return UserStatusNotFoundException.byUserId(userId);
-                });
+                .orElseThrow(() -> UserStatusNotFoundException.byUserId(userId));
         userStatus.updateLastActiveAt(request.newLastActiveAt());
         userStatusRepository.save(userStatus);
-        log.debug("UserStatus 업데이트 성공 - userId: {}", userId);
+        log.info("UserStatus 업데이트 성공 - userId: {}", userId);
         return userStatusMapper.toDTO(userStatus);
     }
 
     @Override
     @Transactional
     public void delete(UUID userStatusId) {
-        log.debug("UserStatus 삭제 요청 - userStatusId: {}", userStatusId);
+        log.debug("UserStatus 삭제 - userStatusId: {}", userStatusId);
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> {
-                    log.warn("UserStatus 삭제 실패 - 존재하지 않는 userStatusId: {}", userStatusId);
-                    return new UserStatusNotFoundException(userStatusId);
-                });
+                .orElseThrow(() -> new UserStatusNotFoundException(userStatusId));
         userStatusRepository.deleteById(userStatus.getId());
-        log.debug("UserStatus 삭제 성공 - userStatusId: {}", userStatusId);
+        log.info("UserStatus 삭제 성공 - userStatusId: {}", userStatusId);
     }
 }
