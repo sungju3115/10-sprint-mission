@@ -75,9 +75,9 @@ public class BasicMessageService implements MessageService {
 
         // message 생성
         Message message = new Message(request.content(), channel, sender, attachments);
-        Message savedMessage = messageRepository.save(message);
-        log.info("메시지 생성 성공 - messageId: {}", savedMessage.getId());
-        return messageMapper.toDTO(savedMessage);
+        messageRepository.save(message);
+        log.info("메시지 생성 성공 - messageId: {}", message.getId());
+        return messageMapper.toDTO(message);
     }
 
     @Override

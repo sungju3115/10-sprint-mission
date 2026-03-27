@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +24,6 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
                OR rs.id IS NOT NULL
             """)
     List<Channel> findVisibleChannelsByUserId(@Param("userId") UUID userId);
+
+    boolean existsByNameAndType(String name, ChannelType type);
 }

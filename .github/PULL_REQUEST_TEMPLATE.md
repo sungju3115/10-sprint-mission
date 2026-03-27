@@ -109,12 +109,12 @@
 # 단위 테스트
 
 - [ ] 서비스 레이어의 주요 메소드에 대한 단위 테스트를 작성하세요.
-- [ ] 다음 서비스의 핵심 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
-    - [ ] UserService: create, update, delete 메소드
-    - [ ] ChannelService: create(PUBLIC, PRIVATE), update, delete, findByUserId 메소드
-    - [ ] MessageService: create, update, delete, findByChannelId 메소드
-- [ ] Mockito를 활용해 Repository 의존성을 모의(mock)하세요.
-- [ ] BDDMockito를 활용해 테스트 가독성을 높이세요.
+- [X] 다음 서비스의 핵심 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+    - [X] UserService: create, update, delete 메소드
+    - [X] ChannelService: create(PUBLIC, PRIVATE), update, delete, findByUserId 메소드
+    - [X] MessageService: create, update, delete, findByChannelId 메소드
+- [X] Mockito를 활용해 Repository 의존성을 모의(mock)하세요.
+- [X] BDDMockito를 활용해 테스트 가독성을 높이세요.
 
 ---
 
@@ -165,3 +165,4 @@
 ### 궁금한 점
 - IoException 같은 것은 굳이 Custom 예외로 정의해서 반환해야할까??
 - Actuator에 Git 정보 연동 하려고 했는데 호환이 안되서 맞는 버전이 뭘까?? 
+- JPA 더티체킹, 명시적 save는 무슨 차이가 있을까 ?? 

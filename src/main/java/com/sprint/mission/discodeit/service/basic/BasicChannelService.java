@@ -43,14 +43,10 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
-        // 같은 이름 존재 check
-        channelRepository.findAll().stream()
-                .filter(ch -> ch.getType() == ChannelType.PUBLIC)
-                .filter(ch -> ch.getName().equals(request.name()))
-                .findFirst()
-                .ifPresent(ch -> {
-                    throw new ChannelAlreadyExistsException(ch.getName());
-                });
+        // 같은 이름 존재 check (로직 변경: 기존 stream은 channel을 전부 메모리에 load해 비효율적이라고 판단)
+        if(channelRepository.existsByNameAndType(request.name(), ChannelType.PUBLIC)){
+            throw new ChannelAlreadyExistsException(request.name());
+        }
 
         Channel channel = channelMapper.toEntity(request);
         // [저장]

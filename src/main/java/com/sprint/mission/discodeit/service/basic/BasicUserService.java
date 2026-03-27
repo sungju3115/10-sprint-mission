@@ -31,6 +31,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
 
     @Override
     @Transactional
@@ -59,8 +60,7 @@ public class BasicUserService implements UserService {
                      throw new FileStorageException(file.getOriginalFilename());
                  }
                 });
-        UserStatus userStatus = new UserStatus(user);
-
+        userStatusRepository.save(new UserStatus(user));
         User savedUser = userRepository.save(user);
         log.info("사용자 생성 성공 - userId: {}", savedUser.getId());
         return userMapper.toDTO(savedUser);
@@ -99,6 +99,10 @@ public class BasicUserService implements UserService {
             validateEmail(email);
             user.updateEmail(email);
         });
+
+        // user 비밀번호 선택적 업데이트
+        Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
+
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
                     try{
