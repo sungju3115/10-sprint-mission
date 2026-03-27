@@ -1,12 +1,5 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
-import com.sprint.mission.discodeit.exception.channel.ChannelException;
-import com.sprint.mission.discodeit.exception.login.LoginException;
-import com.sprint.mission.discodeit.exception.message.MessageException;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusException;
-import com.sprint.mission.discodeit.exception.user.UserException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
