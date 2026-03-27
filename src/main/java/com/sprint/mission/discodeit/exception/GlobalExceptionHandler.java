@@ -10,10 +10,14 @@ import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,12 +35,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(ErrorResponse.from(ex));
     }
 
-    // Bean - Valid 검증 오류
+    // Dto - Valid 검증 오류
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(Exception ex) {
-        log.warn("[MethodArgumentNotValidException] {}", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        /*
+        MethodArgumentNotValidException에는 어떤 필드가 왜 실패했는지 정보가 담겨있음
+        BindingResult {
+            FieldError { field: "username", message: "must not be blank" }
+            FieldError { field: "password", message: "must not be blank" }
+        } <- 이런 식으로
+        만약 Exception 자체를 그대로 넘기게 된다면 ErrorResponse로 매핑이 안된다!!
+        이때, bindingResult의 message는 한 개 이상일수도 있다 ! 그래서 람다로 처리하는 게 좋을 듯
+         */
+        Map<String, Object> details = ex.getBindingResult().getFieldErrors().stream()
+                        .collect(Collectors.toMap(
+                                FieldError::getField,
+                                FieldError::getDefaultMessage
+                        ));
+
+        log.warn("[MethodArgumentNotValidException] {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.from(HttpStatus.BAD_REQUEST, ex));
+                .body(ErrorResponse.from(HttpStatus.BAD_REQUEST, details, ex));
     }
 
     // 클라이언트 요청 오류

@@ -36,4 +36,16 @@ public record ErrorResponse(
                 status.value()
         );
     }
+
+    // MethodArgumentNotValidException -> ErrorResponse
+    public static ErrorResponse from(HttpStatus status, Map<String, Object> detail, Exception ex){
+        return new ErrorResponse(
+                Instant.now(),
+                status.name(),
+                "입력값 검증에 실패하였습니다.",
+                detail,
+                ex.getClass().getSimpleName(),
+                status.value()
+        );
+    }
 }
