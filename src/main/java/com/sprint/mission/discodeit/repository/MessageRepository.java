@@ -13,6 +13,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
+    void deleteAllByChannelId(UUID channelId);
+    List<Message> findAllByAuthor_Id(UUID authorId);
+    List<Message> findAllByChannelIdIn(List<UUID> channelIds);
+
 
     @Query("SELECT m FROM Message m " +
             "LEFT JOIN FETCH m.author a " +
@@ -22,11 +26,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
                                                 @Param("createdAt") Instant createdAt,
                                                 Pageable pageable);
-    List<Message> findAllByAuthor_Id(UUID authorId);
-    List<Message> findAllByChannelIdIn(List<UUID> channelIds);
-
     @Query("SELECT Max(m.createdAt) FROM Message m WHERE m.channel.id = :channelId")
     Instant findFirstByChannelIdOrderByCreatedAtDesc(@Param("channelId") UUID channelId);
 
-    void deleteAllByChannelId(UUID channelId);
 }

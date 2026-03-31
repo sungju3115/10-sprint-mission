@@ -60,8 +60,8 @@ public class BasicUserService implements UserService {
                      throw new FileStorageException(file.getOriginalFilename());
                  }
                 });
-        userStatusRepository.save(new UserStatus(user));
         User savedUser = userRepository.save(user);
+        userStatusRepository.save(new UserStatus(user));
         log.info("사용자 생성 성공 - userId: {}", savedUser.getId());
         return userMapper.toDTO(savedUser);
     }

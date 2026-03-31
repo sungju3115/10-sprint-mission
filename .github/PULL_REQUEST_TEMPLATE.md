@@ -108,7 +108,7 @@
 
 # 단위 테스트
 
-- [ ] 서비스 레이어의 주요 메소드에 대한 단위 테스트를 작성하세요.
+- [X] 서비스 레이어의 주요 메소드에 대한 단위 테스트를 작성하세요.
 - [X] 다음 서비스의 핵심 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
     - [X] UserService: create, update, delete 메소드
     - [X] ChannelService: create(PUBLIC, PRIVATE), update, delete, findByUserId 메소드
@@ -121,31 +121,31 @@
 # 슬라이스 테스트
 
 - [ ] 레포지토리 레이어의 슬라이스 테스트를 작성하세요.
-    - [ ] @DataJpaTest를 활용해 테스트를 구현하세요.
-    - [ ] 테스트 환경을 구성하는 프로파일을 구성하세요.
-        - [ ] application-test.yaml을 생성하세요.
-        - [ ] 데이터소스는 H2 인메모리 데이터 베이스를 사용하고, PostgreSQL 호환 모드로 설정하세요.
-        - [ ] H2 데이터베이스를 위해 필요한 의존성을 추가하세요.
-        - [ ] 테스트 시작 시 스키마를 새로 생성하도록 설정하세요.
-        - [ ] 디버깅에 용이하도록 로그 레벨을 적절히 설정하세요.
-    - [ ] 테스트 실행 간 test 프로파일을 활성화 하세요.
-    - [ ] JPA Audit 기능을 활성화 하기 위해 테스트 클래스에 @EnableJpaAuditing을 추가하세요.
-    - [ ] 주요 레포지토리(User, Channel, Message)의 주요 쿼리 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
-        - [ ] 커스텀 쿼리 메소드
-        - [ ] 페이징 및 정렬 메소드
-- [ ] 컨트롤러 레이어의 슬라이스 테스트를 작성하세요.
-    - [ ] @WebMvcTest를 활용해 테스트를 구현하세요.
-    - [ ] WebMvcTest에서 자동으로 등록되지 않는 유형의 Bean이 필요하다면 @Import를 활용해 추가하세요.
+    - [X] @DataJpaTest를 활용해 테스트를 구현하세요.
+    - [X] 테스트 환경을 구성하는 프로파일을 구성하세요.
+        - [X] application-test.yaml을 생성하세요.
+        - [X] 데이터소스는 H2 인메모리 데이터 베이스를 사용하고, PostgreSQL 호환 모드로 설정하세요.
+        - [X] H2 데이터베이스를 위해 필요한 의존성을 추가하세요.
+        - [X] 테스트 시작 시 스키마를 새로 생성하도록 설정하세요.
+        - [X] 디버깅에 용이하도록 로그 레벨을 적절히 설정하세요.
+    - [X] 테스트 실행 간 test 프로파일을 활성화 하세요.
+    - [X] JPA Audit 기능을 활성화 하기 위해 테스트 클래스에 @EnableJpaAuditing을 추가하세요.
+    - [X] 주요 레포지토리(User, Channel, Message)의 주요 쿼리 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+        - [X] 커스텀 쿼리 메소드
+        - [X] 페이징 및 정렬 메소드
+- [X] 컨트롤러 레이어의 슬라이스 테스트를 작성하세요.
+    - [X] @WebMvcTest를 활용해 테스트를 구현하세요.
+    - [X] WebMvcTest에서 자동으로 등록되지 않는 유형의 Bean이 필요하다면 @Import를 활용해 추가하세요.
 
       예시:
         ```java
         @Import({ErrorCodeStatusMapper.class})
         ```
 
-    - [ ] 주요 컨트롤러(User, Channel, Message)에 대해 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
-    - [ ] MockMvc를 활용해 컨트롤러를 테스트하세요.
-    - [ ] 서비스 레이어를 모의(mock)하여 컨트롤러 로직만 테스트하세요.
-    - [ ] JSON 응답을 검증하는 테스트를 포함하세요.
+    - [X] 주요 컨트롤러(User, Channel, Message)에 대해 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+    - [X] MockMvc를 활용해 컨트롤러를 테스트하세요.
+    - [X] 서비스 레이어를 모의(mock)하여 컨트롤러 로직만 테스트하세요.
+    - [X] JSON 응답을 검증하는 테스트를 포함하세요.
 
 ---
 
@@ -166,3 +166,77 @@
 - IoException 같은 것은 굳이 Custom 예외로 정의해서 반환해야할까??
 - Actuator에 Git 정보 연동 하려고 했는데 호환이 안되서 맞는 버전이 뭘까?? 
 - JPA 더티체킹, 명시적 save는 무슨 차이가 있을까 ?? 
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+    1. Spring 테스트 슬라이싱 (Test Slicing)
+
+  Spring은 전체 컨텍스트를 로드하는 대신 레이어별로 쪼개서 테스트할 수 있습니다.
+
+  ┌─────────────────┬───────────────────┬────────────────────┐                                                                                                                                                 
+  │   어노테이션    │     로드 대상     │ 주로 테스트하는 것 │                                                                                                                                               
+  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
+  │ @SpringBootTest │ 전체              │ 통합 테스트        │                                                                                                                                                 
+  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
+  │ @WebMvcTest     │ 웹 레이어만       │ Controller         │                                                                                                                                                 
+  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                               
+  │ @DataJpaTest    │ JPA 레이어만      │ Repository         │                                                                                                                                                 
+  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
+  │ @ServiceTest    │ (없음, 직접 Mock) │ Service            │                                                                                                                                                 
+  └─────────────────┴───────────────────┴────────────────────┘
+
+  검색 키워드: Spring Test Slicing, @WebMvcTest vs @SpringBootTest
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                        
+    2. Spring Application Context 로딩 원리
+
+  @SpringBootApplication 안에 @ComponentScan이 포함되어 있고, 이게 패키지 하위의 모든 빈을 스캔합니다. 테스트 어노테이션마다 어떤 빈을 스캔하고 제외하는지 필터 조건이 다릅니다.
+
+  검색 키워드: @SpringBootApplication 내부 구조, @ComponentScan 필터, Spring Auto-configuration
+                                          
+  ---                                                                                                                                                                                                          
+    3. Mockito + MockMvc
+
+    - @MockitoBean - 실제 빈 대신 Mock 객체를 컨텍스트에 등록
+    - given().willReturn() - 메서드 호출 시 반환값 지정
+    - willThrow().given() - void 메서드에서 예외 던지기
+    - MockMvc.perform() - 실제 HTTP 요청 없이 Controller 호출
+    - jsonPath() - 응답 JSON 필드 검증
+
+  검색 키워드: Mockito BDDMockito, MockMvc 사용법, jsonPath 문법
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+    4. JPA Auditing
+
+  엔티티의 생성/수정 시각을 자동으로 관리하는 기능.
+
+  @EnableJpaAuditing  → 기능 활성화                                                                                                                                                                            
+  @EntityListeners(AuditingEntityListener.class)  → 엔티티에 리스너 등록
+  @CreatedDate / @LastModifiedDate  → 자동으로 값 채워짐
+
+  검색 키워드: Spring Data JPA Auditing, @CreatedDate @LastModifiedDate
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+    5. @Configuration 분리 패턴
+
+  설정을 목적별로 분리하는 것은 스프링의 기본 설계 원칙입니다.
+
+    - @SpringBootApplication에 모든 걸 몰아넣으면 테스트 충돌, 가독성 저하
+    - 관심사 분리(Separation of Concerns) 원칙에 따라 설정도 역할별로 클래스를 나눔
+
+  검색 키워드: Spring @Configuration 분리, Spring 설정 클래스 분리 패턴
+                                                                                                                                                                                                               
+  ---                                                                                                                                                                                                          
+  공부 순서 추천
+
+  Mockito 기초                                                                                                                                                                                                 
+  ↓                                                                                                                                                                                                      
+  MockMvc + @WebMvcTest                                                                                                                                                                                        
+  ↓                                       
+  @DataJpaTest + TestEntityManager                                                                                                                                                                             
+  ↓                                                                                                                                                                                                        
+  Spring Context 로딩 원리                                                                                                                                                                                     
+  ↓                                                                                                                                                                                                        
+  @SpringBootTest 통합 테스트
+
+  테스트 코드를 잘 짜려면 결국 "Spring이 어떤 빈을 언제 로드하는가" 를 이해하는 게 핵심입니다.                                                                                                                 
+                                                                                              
