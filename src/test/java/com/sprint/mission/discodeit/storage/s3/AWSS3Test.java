@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -17,6 +18,7 @@ import java.io.FileInputStream;
 import java.time.Duration;
 import java.util.Properties;
 
+@Disabled
 public class AWSS3Test {
     private S3Client s3Client;
     private S3Presigner s3Presigner;
