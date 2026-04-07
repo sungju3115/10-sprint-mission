@@ -327,7 +327,7 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   **Docker 이미지 빌드 및 푸시**
 
   - [X] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
-  - [X] AWS CLI를 설정하는 Step을 추가하세요.
+  - [ ] AWS CLI를 설정하는 Step을 추가하세요.
     - Public ECR에 배포해야하므로 리전은 `us-east-1`으로 설정해야합니다.
   - [X] ECR 로그인 Step을 추가하세요.
     - Public ECR에 로그인해야합니다.
