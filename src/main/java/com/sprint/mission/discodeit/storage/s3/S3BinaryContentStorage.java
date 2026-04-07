@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.storage.local;
+package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
