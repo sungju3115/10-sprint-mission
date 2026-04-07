@@ -175,7 +175,7 @@ CREATE DATABASE discodeit OWNER discodeit_user;
 -- 4. schema.sql 실행하여 테이블 생성
 ```
 
-- [ ] 구성이 완료되면 rds-ssh 인스턴스는 완전히 삭제하여 과금에 유의하세요.
+- [] 구성이 완료되면 rds-ssh 인스턴스는 완전히 삭제하여 과금에 유의하세요.
 
 ---
 
