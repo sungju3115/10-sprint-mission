@@ -43,3 +43,6 @@ bin/
 # Misc
 HELP.md
 CLAUDE.md
+
+.env
+discodeit.env
