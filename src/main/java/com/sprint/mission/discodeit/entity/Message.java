@@ -33,7 +33,7 @@ public class Message extends BaseUpdatableEntity {
     @JoinTable(
             name = "message_attachements",
             joinColumns = @JoinColumn(name="message_id"),
-            inverseJoinColumns = @JoinColumn(name="attachement_id")
+            inverseJoinColumns = @JoinColumn(name="attachment_id")
     )
     private List<BinaryContent> attachments = new ArrayList<>();
 
