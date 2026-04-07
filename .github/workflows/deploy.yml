@@ -69,7 +69,8 @@ jobs:
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
-            --desired-count 1
+            --desired-count 0
+          sleep 30
 
       - name: ECS 서비스 업데이트
         run: |
@@ -77,4 +78,4 @@ jobs:
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
             --task-definition ${{ steps.update-task.outputs.task_arn }} \
-            --desired-count 2
+            --desired-count 1
