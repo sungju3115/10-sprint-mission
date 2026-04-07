@@ -49,12 +49,19 @@ jobs:
       - name: 태스크 정의 업데이트
         id: update-task
         run: |
-          TASK_DEF=$(aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} --query taskDefinition)
+          TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
+            --query taskDefinition \
+            --output json | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          
           NEW_TASK_DEF=$(echo $TASK_DEF | jq --arg IMAGE "${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }}" \
             '.containerDefinitions[0].image = $IMAGE')
+          
           NEW_TASK_ARN=$(aws ecs register-task-definition \
             --cli-input-json "$NEW_TASK_DEF" \
-            --query taskDefinition.taskDefinitionArn --output text)
+            --query taskDefinition.taskDefinitionArn \
+            --output text)
+          
           echo "task_arn=$NEW_TASK_ARN" >> $GITHUB_OUTPUT
 
       - name: 기존 서비스 중단 (프리티어 고려)
@@ -63,6 +70,7 @@ jobs:
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
             --desired-count 0
+          sleep 30
 
       - name: ECS 서비스 업데이트
         run: |
