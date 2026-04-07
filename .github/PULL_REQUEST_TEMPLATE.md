@@ -300,11 +300,11 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 
 #### CI (지속적 통합)
 
-- [ ] CI를 위한 워크플로우를 설정하세요.
-  - [ ] `.github/workflows/test.yml` 파일을 생성하세요.
-  - [ ] `main` 브랜치에 PR이 생성되면 실행되도록 설정하세요.
-  - [ ] 테스트가 실행하는 Job을 정의하세요.
-  - [ ] CodeCov를 통해 테스트 커버리지 뱃지를 README에 추가해보세요.
+- [X] CI를 위한 워크플로우를 설정하세요.
+  - [X] `.github/workflows/test.yml` 파일을 생성하세요.
+  - [X] `main` 브랜치에 PR이 생성되면 실행되도록 설정하세요.
+  - [X] 테스트가 실행하는 Job을 정의하세요.
+  - [X] CodeCov를 통해 테스트 커버리지 뱃지를 README에 추가해보세요.
 
 #### CD (지속적 배포)
 
@@ -314,10 +314,10 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 
   **AWS 정보 설정**
 
-  - [ ] GitHub 레포지토리 설정을 통해 시크릿을 추가하세요.
+  - [X] GitHub 레포지토리 설정을 통해 시크릿을 추가하세요.
     - `AWS_ACCESS_KEY`: IAM 사용자의 액세스 키
     - `AWS_SECRET_KEY`: IAM 사용자의 시크릿 키
-  - [ ] GitHub 레포지토리 설정을 통해 변수를 추가하세요.
+  - [X] GitHub 레포지토리 설정을 통해 변수를 추가하세요.
     - `AWS_REGION`: AWS 리전 (`ap-northeast-2`)
     - `ECR_REPOSITORY_URI`: ECR 레포지토리 URI
     - `ECS_CLUSTER`: ECS 클러스터 이름 (`discodeit-cluster`)
