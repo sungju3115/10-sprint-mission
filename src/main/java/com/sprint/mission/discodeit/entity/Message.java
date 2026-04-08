@@ -31,7 +31,7 @@ public class Message extends BaseUpdatableEntity {
     @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "message_attachements",
+            name = "message_attachments",
             joinColumns = @JoinColumn(name="message_id"),
             inverseJoinColumns = @JoinColumn(name="attachment_id")
     )
