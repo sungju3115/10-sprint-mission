@@ -308,9 +308,9 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 
 #### CD (지속적 배포)
 
-- [ ] CD를 위한 워크플로우를 설정하세요.
+- [X] CD를 위한 워크플로우를 설정하세요.
   - [X] `.github/workflows/deploy.yml` 파일을 생성하세요.
-  - [ ] `release` 브랜치에 코드가 푸시되면 실행되도록 설정하세요.
+  - [X] `release` 브랜치에 코드가 푸시되면 실행되도록 설정하세요.
 
   **AWS 정보 설정**
 
@@ -327,7 +327,7 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   **Docker 이미지 빌드 및 푸시**
 
   - [X] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
-  - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+  - [X] AWS CLI를 설정하는 Step을 추가하세요.
     - Public ECR에 배포해야하므로 리전은 `us-east-1`으로 설정해야합니다.
   - [X] ECR 로그인 Step을 추가하세요.
     - Public ECR에 로그인해야합니다.
@@ -352,6 +352,7 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 - EC2에서 아웃바운드 규칙 설정은 거의 안해봤는데, 간단하게 생각해보면 EC2 트래픽이 다른 곳에 들어가야만 할 때 설정해줘야 할 것 같다고 느꼈습니다.
 - 그러면 보통 인스턴스가 다른 곳으로 들어가는 경우? 는 언제일까요 ?? 실무에서, 언제 설정해주는 지 궁금하고, EC2 아웃바운드 트래픽을 통제하는 경우가 흔한지 궁금합니다 
 - EC2, RDS, 등 설정하면서 보안 그룹이 생기니까 엄청 헷갈렸던 거 같습니다. 보안 그룹 네이밍도 컨벤션이 존재한가요 ? 
+- Cluster가 EC2를 관리하고 서비스는 Task들을 관리하는 것으로 알고 있습니다. 지금 실습에서는 Service에서 EC2 한개만 관리하도록 설정됐는데, 서비스가 EC2 여러대를 관리할 때는 언제일까요 ? 
   ---                                                                                                                                                                                                          
     1. Spring 테스트 슬라이싱 (Test Slicing)
 
