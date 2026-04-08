@@ -308,9 +308,9 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 
 #### CD (지속적 배포)
 
-- [ ] CD를 위한 워크플로우를 설정하세요.
+- [X] CD를 위한 워크플로우를 설정하세요.
   - [X] `.github/workflows/deploy.yml` 파일을 생성하세요.
-  - [ ] `release` 브랜치에 코드가 푸시되면 실행되도록 설정하세요.
+  - [X] `release` 브랜치에 코드가 푸시되면 실행되도록 설정하세요.
 
   **AWS 정보 설정**
 
@@ -327,7 +327,7 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   **Docker 이미지 빌드 및 푸시**
 
   - [X] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
-  - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+  - [X] AWS CLI를 설정하는 Step을 추가하세요.
     - Public ECR에 배포해야하므로 리전은 `us-east-1`으로 설정해야합니다.
   - [X] ECR 로그인 Step을 추가하세요.
     - Public ECR에 로그인해야합니다.
@@ -348,80 +348,39 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   - [X] 새로 등록한 태스크 정의를 사용하도록 ECS 서비스를 업데이트하는 Step을 추가하세요.
   - [X] AWS 콘솔을 통해 새로 등록된 태스크 정의로 배포되었는지 확인하세요.
 
+#### 리뷰를 위해 PR에 포함해야할 정보
+
+- [ ] .env 파일 (AWS 키는 제외)
+- [X] RDS
+  - AWS 콘솔 인스턴스 상세 페이지 스크린샷 이미지
+  ![스크린샷 2026-04-08 오후 2.15.03.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_IpjmAu/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.15.03.png)
+  - SSH 터널링을 통해 연결한 DataGrip 스크린샷 이미지
+    - 생성한 테이블 목록이 보이도록 캡처해주세요.
+  ![스크린샷 2026-04-08 오후 2.13.18.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_TZQ1CM/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.13.18.png)
+- [X] ECR
+  - 푸시된 이미지가 보이는 AWS 콘솔 페이지 스크린샷 이미지
+  ![스크린샷 2026-04-08 오후 2.15.44.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_44oHP2/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.15.44.png)
+- [X] ECS
+  - 실행 중인 태스크 구성정보가 표시된 AWS 콘솔 페이지 스크린샷 이미지
+  ![스크린샷 2026-04-08 오후 2.16.41.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_FJ2no1/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.16.41.png)
+  - 배포된 EC2 엔드포인트
+  - 52.79.181.4 
+
+- [X] VPC
+  - 보안 그룹의 인바운드 규칙을 확인할 수 있는 AWS 콘솔 페이지 스크린샷 이미지
+  - RDS 보안 그룹
+  ![스크린샷 2026-04-08 오후 2.20.29.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_LbRbn4/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.20.29.png)
+  - ECS 보안 그룹
+  ![스크린샷 2026-04-08 오후 2.21.04.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_sjyOND/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.21.04.png)
+  - EC2 보안 그룹
+  ![스크린샷 2026-04-08 오후 2.22.06.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_Cat0xi/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.22.06.png)
+
+- [X] IAM
+  - 사용자의 권한 정책이 표시된 AWS 콘솔 페이지 스크린샷 이미지
+  ![스크린샷 2026-04-08 오후 2.18.48.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_aiYL6T/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.18.48.png)
+
 ### 궁금한 점
-- EC2에서 아웃바운드 규칙 설정은 거의 안해봤는데, 간단하게 생각해보면 EC2 트래픽이 다른 곳에 들어가야만 할 때 설정해줘야 할 것 같다고 느꼈습니다.
-- 그러면 보통 인스턴스가 다른 곳으로 들어가는 경우? 는 언제일까요 ?? 실무에서, 언제 설정해주는 지 궁금하고, EC2 아웃바운드 트래픽을 통제하는 경우가 흔한지 궁금합니다 
+- 아웃바운드 규칙 설정은 거의 안해봤는데, 간단하게 예를 들어 보면 EC2 트래픽이 다른 곳에 들어가야만 할 때 설정해줘야 할 것 같다고 느꼈습니다. 그러면 보통 인스턴스가 다른 곳으로 들어가는 경우?는 언제일까요?? 실무에서, 언제 설정해주는 지 궁금하고, EC2 아웃바운드 트래픽을 통제하는 경우가 흔한지 궁금합니다 
 - EC2, RDS, 등 설정하면서 보안 그룹이 생기니까 엄청 헷갈렸던 거 같습니다. 보안 그룹 네이밍도 컨벤션이 존재한가요 ? 
-  ---                                                                                                                                                                                                          
-    1. Spring 테스트 슬라이싱 (Test Slicing)
-
-  Spring은 전체 컨텍스트를 로드하는 대신 레이어별로 쪼개서 테스트할 수 있습니다.
-
-  ┌─────────────────┬───────────────────┬────────────────────┐                                                                                                                                                 
-  │   어노테이션    │     로드 대상     │ 주로 테스트하는 것 │                                                                                                                                               
-  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
-  │ @SpringBootTest │ 전체              │ 통합 테스트        │                                                                                                                                                 
-  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
-  │ @WebMvcTest     │ 웹 레이어만       │ Controller         │                                                                                                                                                 
-  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                               
-  │ @DataJpaTest    │ JPA 레이어만      │ Repository         │                                                                                                                                                 
-  ├─────────────────┼───────────────────┼────────────────────┤                                                                                                                                                 
-  │ @ServiceTest    │ (없음, 직접 Mock) │ Service            │                                                                                                                                                 
-  └─────────────────┴───────────────────┴────────────────────┘
-
-  검색 키워드: Spring Test Slicing, @WebMvcTest vs @SpringBootTest
-                                                                                                                                                                                                               
-  ---                                                                                                                                                                                                        
-    2. Spring Application Context 로딩 원리
-
-  @SpringBootApplication 안에 @ComponentScan이 포함되어 있고, 이게 패키지 하위의 모든 빈을 스캔합니다. 테스트 어노테이션마다 어떤 빈을 스캔하고 제외하는지 필터 조건이 다릅니다.
-
-  검색 키워드: @SpringBootApplication 내부 구조, @ComponentScan 필터, Spring Auto-configuration
-                                          
-  ---                                                                                                                                                                                                          
-    3. Mockito + MockMvc
-
-    - @MockitoBean - 실제 빈 대신 Mock 객체를 컨텍스트에 등록
-    - given().willReturn() - 메서드 호출 시 반환값 지정
-    - willThrow().given() - void 메서드에서 예외 던지기
-    - MockMvc.perform() - 실제 HTTP 요청 없이 Controller 호출
-    - jsonPath() - 응답 JSON 필드 검증
-
-  검색 키워드: Mockito BDDMockito, MockMvc 사용법, jsonPath 문법
-                                                                                                                                                                                                               
-  ---                                                                                                                                                                                                          
-    4. JPA Auditing
-
-  엔티티의 생성/수정 시각을 자동으로 관리하는 기능.
-
-  @EnableJpaAuditing  → 기능 활성화                                                                                                                                                                            
-  @EntityListeners(AuditingEntityListener.class)  → 엔티티에 리스너 등록
-  @CreatedDate / @LastModifiedDate  → 자동으로 값 채워짐
-
-  검색 키워드: Spring Data JPA Auditing, @CreatedDate @LastModifiedDate
-                                                                                                                                                                                                               
-  ---                                                                                                                                                                                                          
-    5. @Configuration 분리 패턴
-
-  설정을 목적별로 분리하는 것은 스프링의 기본 설계 원칙입니다.
-
-    - @SpringBootApplication에 모든 걸 몰아넣으면 테스트 충돌, 가독성 저하
-    - 관심사 분리(Separation of Concerns) 원칙에 따라 설정도 역할별로 클래스를 나눔
-
-  검색 키워드: Spring @Configuration 분리, Spring 설정 클래스 분리 패턴
-                                                                                                                                                                                                               
-  ---                                                                                                                                                                                                          
-  공부 순서 추천
-
-  Mockito 기초                                                                                                                                                                                                 
-  ↓                                                                                                                                                                                                      
-  MockMvc + @WebMvcTest                                                                                                                                                                                        
-  ↓                                       
-  @DataJpaTest + TestEntityManager                                                                                                                                                                             
-  ↓                                                                                                                                                                                                        
-  Spring Context 로딩 원리                                                                                                                                                                                     
-  ↓                                                                                                                                                                                                        
-  @SpringBootTest 통합 테스트
-
-  테스트 코드를 잘 짜려면 결국 "Spring이 어떤 빈을 언제 로드하는가" 를 이해하는 게 핵심입니다.                                                                                                                 
+                                                                                                               
                                                                                               
