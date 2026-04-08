@@ -70,13 +70,13 @@ CREATE TABLE messages (
     content VARCHAR(500) NOT NULL
 );
 
-CREATE TABLE message_attachements (
+CREATE TABLE message_attachments (
     message_id UUID NOT NULL,
-    CONSTRAINT fk_message_attachements_message FOREIGN KEY (message_id)
+    CONSTRAINT fk_message_attachments_message FOREIGN KEY (message_id)
         REFERENCES messages(id)
         ON DELETE CASCADE,
     attachment_id UUID NOT NULL,
-    CONSTRAINT fk_message_attachements_attachment FOREIGN KEY (attachment_id)
+    CONSTRAINT fk_message_attachments_attachment FOREIGN KEY (attachment_id)
         REFERENCES binary_contents(id)
         ON DELETE CASCADE
 );
