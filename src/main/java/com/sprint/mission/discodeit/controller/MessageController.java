@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,8 +60,8 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
-    public MessageDTO postMessage(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
-                                  @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
+    public ResponseEntity<MessageDTO> postMessage(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
+                                                 @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
                                        ){
         log.info("메시지 생성 요청 - channelId: {}, authorId: {}", request.channelId(), request.authorId());
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
@@ -77,7 +78,7 @@ public class MessageController {
                     }
                 }).toList())
                 .orElse(new ArrayList<>());
-        return messageService.create(request, attachmentRequests);
+        return ResponseEntity.ok(messageService.create(request, attachmentRequests));
     }
 
     // 메시지 수정 - PATCH /api/messages/{messageId} (200 OK)
@@ -98,7 +99,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Message not found"))
             )
     })
-    public MessageDTO updateMessage(
+    public ResponseEntity<MessageDTO> updateMessage(
             @Parameter(
                     description = "수정할 messageId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -108,7 +109,7 @@ public class MessageController {
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request){
         log.info("메시지 수정 요청 - messageId: {}", messageId);
-        return messageService.update(messageId, request);
+        return ResponseEntity.ok(messageService.update(messageId, request));
     }
 
     // 메시지 삭제 - DELETE /api/messages/{messageId} (204 No Content)
