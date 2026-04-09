@@ -3,6 +3,11 @@ spring:
     activate:
       on-profile: dev
 
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+
   jpa:
     hibernate:
       ddl-auto: update
