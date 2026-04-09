@@ -398,8 +398,8 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
 
 ## Spring Boot Admin을 활용한 메트릭 가시화
 
-- [ ] Spring Boot Admin 서버를 구현할 모듈을 생성하세요.
-- [ ] `admin` 모듈의 메인 클래스에 `@EnableAdminServer` 어노테이션을 추가하고, 서버는 9090번 포트로 설정합니다.
+- [X] Spring Boot Admin 서버를 구현할 모듈을 생성하세요.
+- [X] `admin` 모듈의 메인 클래스에 `@EnableAdminServer` 어노테이션을 추가하고, 서버는 9090번 포트로 설정합니다.
 
 ```java
 import de.codecentric.boot.admin.server.config.EnableAdminServer;
@@ -422,9 +422,9 @@ server:
   port: 9090
 ```
 
-- [ ] `admin` 서버 실행 후 `localhost:9090/applications` 에 접속해봅니다.
-- [ ] discodeit 프로젝트에 Spring Boot Admin Client를 적용합니다.
-  - [ ] 의존성을 추가합니다.
+- [X] `admin` 서버 실행 후 `localhost:9090/applications` 에 접속해봅니다.
+- [X] discodeit 프로젝트에 Spring Boot Admin Client를 적용합니다.
+  - [X] 의존성을 추가합니다.
 
 ```groovy
 dependencies {
@@ -432,7 +432,7 @@ dependencies {
 }
 ```
 
-- [ ] admin 서버에 등록될 수 있도록 설정 정보를 추가합니다.
+- [X] admin 서버에 등록될 수 있도록 설정 정보를 추가합니다.
 
 ```yaml
 # application.yml
@@ -464,8 +464,8 @@ spring:
         url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
 ```
 
-- [ ] discodeit 서버를 실행하고, admin 대시보드에 discodeit 인스턴스가 추가되었는지 확인합니다.
-- [ ] admin 대시보드에서 각종 메트릭 정보를 확인해보세요.
+- [X] discodeit 서버를 실행하고, admin 대시보드에 discodeit 인스턴스가 추가되었는지 확인합니다.
+- [X] admin 대시보드에서 각종 메트릭 정보를 확인해보세요.
   - 주요 API의 요청 횟수, 응답시간 등
   - 서비스 정보
 
