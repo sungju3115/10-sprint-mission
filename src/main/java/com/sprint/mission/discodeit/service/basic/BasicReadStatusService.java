@@ -44,9 +44,9 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
         ReadStatus readStatus = new ReadStatus(user, channel);
-        ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
-        log.info("ReadStatus 생성 성공 - readStatusId: {}", savedReadStatus.getId());
-        return readStatusMapper.toDto(savedReadStatus);
+        readStatusRepository.save(readStatus);
+        log.info("ReadStatus 생성 성공 - readStatusId: {}", readStatus.getId());
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
@@ -81,10 +81,9 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     @Transactional
     public void delete(UUID readStatusID){
-        if(!readStatusRepository.existsById(readStatusID)){
-            throw new ReadStatusNotFoundException(readStatusID);
-        }
-        readStatusRepository.deleteById(readStatusID);
+        ReadStatus readStatus = readStatusRepository.findById(readStatusID)
+                .orElseThrow(() -> new ReadStatusNotFoundException(readStatusID));
+        readStatusRepository.delete(readStatus);
         log.info("ReadStatus 삭제 성공 - readStatusId: {}", readStatusID);
     }
 }
