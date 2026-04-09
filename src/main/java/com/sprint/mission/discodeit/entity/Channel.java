@@ -11,7 +11,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "channels")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
     // 필드
