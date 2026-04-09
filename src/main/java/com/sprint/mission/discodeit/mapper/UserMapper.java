@@ -11,6 +11,4 @@ public interface UserMapper {
     @Mapping(target = "profile", source = "user.profile")
     @Mapping(target = "online", expression = "java(user.getUserStatus() != null && user.getUserStatus().isOnline())")
     UserDTO toDTO(User user);
-
-    User toEntity(UserCreateRequest request);
 }
