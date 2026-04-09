@@ -379,6 +379,124 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   - 사용자의 권한 정책이 표시된 AWS 콘솔 페이지 스크린샷 이미지
   ![스크린샷 2026-04-08 오후 2.18.48.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_aiYL6T/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.18.48.png)
 
+# Sprint 7 미완료 심화
+
+## MDC를 활용한 로깅 고도화
+
+- [X] 요청 ID, 요청 URL, 요청 방식 등의 정보를 MDC에 추가하는 인터셉터를 구현하세요.
+  - [X] 클래스명: `MDCLoggingInterceptor`
+  - [x] 패키지명: `com.**.discodeit.config`
+  - [X] 요청 ID는 랜덤한 문자열로 생성합니다. (UUID)
+  - [X] 요청 ID는 응답 헤더에 포함시켜 더 많은 분석이 가능하도록 합니다.
+    - 헤더 이름: `Discodeit-Request-ID`
+- [X] `WebMvcConfigurer`를 통해 `MDCLoggingInterceptor`를 등록하세요.
+  - [X] 클래스명: `WebMvcConfig`
+  - [X] 패키지명: `com.**.discodeit.config`
+- [X] Logback 패턴에 MDC 값을 포함시키세요.
+
+---
+
+## Spring Boot Admin을 활용한 메트릭 가시화
+
+- [ ] Spring Boot Admin 서버를 구현할 모듈을 생성하세요.
+- [ ] `admin` 모듈의 메인 클래스에 `@EnableAdminServer` 어노테이션을 추가하고, 서버는 9090번 포트로 설정합니다.
+
+```java
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
+
+@SpringBootApplication
+@EnableAdminServer
+public class AdminApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AdminApplication.class, args);
+    }
+}
+```
+
+```yaml
+# application.yaml
+spring:
+  application:
+    name: admin
+server:
+  port: 9090
+```
+
+- [ ] `admin` 서버 실행 후 `localhost:9090/applications` 에 접속해봅니다.
+- [ ] discodeit 프로젝트에 Spring Boot Admin Client를 적용합니다.
+  - [ ] 의존성을 추가합니다.
+
+```groovy
+dependencies {
+    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
+}
+```
+
+- [ ] admin 서버에 등록될 수 있도록 설정 정보를 추가합니다.
+
+```yaml
+# application.yml
+spring:
+  application:
+    name: discodeit
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+```
+
+```yaml
+# application-dev.yml
+spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+```
+
+```yaml
+# application-prod.yml
+spring:
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+```
+
+- [ ] discodeit 서버를 실행하고, admin 대시보드에 discodeit 인스턴스가 추가되었는지 확인합니다.
+- [ ] admin 대시보드에서 각종 메트릭 정보를 확인해보세요.
+  - 주요 API의 요청 횟수, 응답시간 등
+  - 서비스 정보
+
+---
+
+## 테스트 커버리지 관리
+
+- [ ] JaCoCo 플러그인을 추가하세요.
+
+```groovy
+plugins {
+    id 'jacoco'
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+```
+
+- [ ] 테스트 실행 후 생성된 리포트를 분석해보세요.
+  - 리포트는 `build/reports/jacoco` 경로에서 확인할 수 있습니다.
+- [ ] `com.sprint.mission.discodeit.service.basic` 패키지에 대해서 60% 이상의 코드 커버리지를 달성하세요.
+
 ### 궁금한 점
 - 아웃바운드 규칙 설정은 거의 안해봤는데, 간단하게 예를 들어 보면 EC2 트래픽이 다른 곳에 들어가야만 할 때 설정해줘야 할 것 같다고 느꼈습니다. 그러면 보통 인스턴스가 다른 곳으로 들어가는 경우?는 언제일까요?? 실무에서, 언제 설정해주는 지 궁금하고, EC2 아웃바운드 트래픽을 통제하는 경우가 흔한지 궁금합니다 
 - EC2, RDS, 등 설정하면서 보안 그룹이 생기니까 엄청 헷갈렸던 거 같습니다. 보안 그룹 네이밍도 컨벤션이 존재한가요 ? 
