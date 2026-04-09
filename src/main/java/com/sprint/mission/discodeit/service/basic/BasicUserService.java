@@ -45,10 +45,10 @@ public class BasicUserService implements UserService {
         // 선택적으로 프로필 등록
         profile.ifPresent(file -> postProfile(profile, user));
 
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
         userStatusRepository.save(new UserStatus(user));
-        log.info("사용자 생성 성공 - userId: {}", savedUser.getId());
-        return userMapper.toDTO(savedUser);
+        log.info("사용자 생성 성공 - userId: {}", user.getId());
+        return userMapper.toDTO(user);
     }
 
     @Override
@@ -136,9 +136,9 @@ public class BasicUserService implements UserService {
                         file.getContentType(),
                         file.getSize()
                 );
-                BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
-                binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                user.updateProfile(savedBinaryContent);
+                binaryContentRepository.save(bc);
+                binaryContentStorage.put(bc.getId(), file.getBytes());
+                user.updateProfile(bc);
                 log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
             } catch (IOException e){
                 throw new FileStorageException(file.getOriginalFilename());

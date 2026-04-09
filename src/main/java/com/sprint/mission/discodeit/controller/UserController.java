@@ -57,10 +57,11 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserDTO postUser(@Valid @RequestPart("userCreateRequest") UserCreateRequest request,
+    public ResponseEntity<UserDTO> postUser(@Valid @RequestPart("userCreateRequest") UserCreateRequest request,
                             @RequestPart(value="profile", required = false) MultipartFile profile){
         log.info("사용자 생성 요청 - username: {}, email: {}", request.username(), request.email());
-        return userService.create(request, Optional.ofNullable(profile));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.create(request, Optional.ofNullable(profile)));
     }
 
     // user 정보 수정 - PATCH /api/users/{userId}
@@ -80,7 +81,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
-    public UserDTO updateUser(
+    public ResponseEntity<UserDTO> updateUser(
             @Parameter(
                     description = "수정할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -92,7 +93,7 @@ public class UserController {
             @RequestPart(value="profile", required = false) MultipartFile profile
     ){
         log.info("사용자 수정 요청 - userId: {}", userId);
-        return userService.update(userId, request, Optional.ofNullable(profile));
+        return ResponseEntity.ok(userService.update(userId, request, Optional.ofNullable(profile)));
     }
 
     // user 삭제 - DELETE /api/users/{userId}
@@ -140,7 +141,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
             )
     })
-    public UserDTO getUser(
+    public ResponseEntity<UserDTO> getUser(
             @Parameter(
                     description = "조회할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -150,7 +151,8 @@ public class UserController {
             @PathVariable UUID userId
     ){
         log.debug("사용자 단건 조회 요청 - userId: {}", userId);
-        return userService.find(userId);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .body(userService.find(userId));
     }
 
     // user 다건 조회 - GET /api/users
