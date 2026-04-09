@@ -50,7 +50,7 @@ public class Message extends BaseUpdatableEntity {
     }
 
     public void updateAttachments(List<BinaryContent> attachments) {
-        // JPA는 내부 변경을 감지하지만, 참조 변경은 감지하지 못한다!
+        // JPA는 내부 변경을 감지하지만, 컬렉션의 참조 변경은 감지하지 못한다!
         this.attachments.clear();
         // 참조 교체
         this.attachments = attachments;

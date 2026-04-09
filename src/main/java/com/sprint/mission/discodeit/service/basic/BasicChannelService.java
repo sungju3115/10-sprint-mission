@@ -48,7 +48,10 @@ public class BasicChannelService implements ChannelService {
             throw new ChannelAlreadyExistsException(request.name());
         }
 
-        Channel channel = channelMapper.toEntity(request);
+        Channel channel = new Channel(
+                request.name(),
+                request.description()
+        );
         // [저장]
         channelRepository.save(channel);
 
@@ -62,7 +65,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDTO createPrivate(ChannelCreateRequestPrivate request) {
         // channel 생성
-        Channel channel = channelMapper.toEntity(request);
+        Channel channel = Channel.createPrivateChannel();
 
         // private channel의 userList
         List<UUID> users = request.participantIds();

@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.time.Instant;
 
 // 사용자 온라인 상태
-@Setter(AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "user_statuses")
