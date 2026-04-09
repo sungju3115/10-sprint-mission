@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,9 +44,10 @@ public class ChannelController {
                     schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelDTO postPublicChannel(@Valid @RequestBody ChannelCreateRequestPublic request){
+    public ResponseEntity<ChannelDTO> postPublicChannel(@Valid @RequestBody ChannelCreateRequestPublic request){
         log.info("Public 채널 생성 요청 - name: {}", request.name());
-        return channelService.createPublic(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(channelService.createPublic(request));
     }
 
     // private Channel 생성 - POST /api/channels/private
@@ -60,9 +62,10 @@ public class ChannelController {
                     schema = @Schema (implementation = ChannelDTO.class)
             )
     )
-    public ChannelDTO postPrivateChannel(@Valid @RequestBody ChannelCreateRequestPrivate request){
+    public ResponseEntity<ChannelDTO> postPrivateChannel(@Valid @RequestBody ChannelCreateRequestPrivate request){
         log.info("Private 채널 생성 요청 - participantIds: {}", request.participantIds());
-        return channelService.createPrivate(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(channelService.createPrivate(request));
     }
 
     // Channel 단건 조회 - GET /api/channels/{channelId} (201 Created)
@@ -85,7 +88,7 @@ public class ChannelController {
                     )
             )
     })
-    public ChannelDTO getChannel(
+    public ResponseEntity<ChannelDTO> getChannel(
             @Parameter(
                     description = "조회할 채널 Id",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -95,7 +98,7 @@ public class ChannelController {
             @PathVariable UUID channelId
     ){
         log.debug("채널 단건 조회 요청 - channelId: {}", channelId);
-        return channelService.find(channelId);
+        return ResponseEntity.ok(channelService.find(channelId));
     }
 
     // User가 참여 중인 Channel 목록 조회 - GET /api/channels?userID=userId
@@ -108,7 +111,7 @@ public class ChannelController {
                     mediaType = "application/json",
                     array = @ArraySchema(schema = @Schema(implementation = ChannelDTO.class))
             ))
-    public List<ChannelDTO> getAllChannels(
+    public ResponseEntity<List<ChannelDTO>> getAllChannels(
             @Parameter(
                     description = "조회할 userId",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -117,7 +120,7 @@ public class ChannelController {
             )
             @RequestParam UUID userId){
         log.debug("사용자별 채널 목록 조회 요청 - userId: {}", userId);
-        return channelService.findAllByUserID(userId);
+        return ResponseEntity.ok(channelService.findAllByUserID(userId));
     }
 
     // 채널 수정 - PATCH /api/channels/{channelId} (200 OK)
@@ -147,7 +150,7 @@ public class ChannelController {
                     )
             )
     })
-    public ChannelDTO updateChannel(
+    public ResponseEntity<ChannelDTO> updateChannel(
             @Parameter(
                     description = "수정할 Channel Id",
                     example = "123e4567-e89b-12d3-a456-426655440000",
@@ -158,7 +161,7 @@ public class ChannelController {
             @Valid @RequestBody ChannelUpdateRequest request
     ){
         log.info("채널 수정 요청 - channelId: {}, newName: {}, newDescription: {}", channelId, request.newName(), request.newDescription());
-        return channelService.update(channelId, request);
+        return ResponseEntity.ok(channelService.update(channelId, request));
     }
 
     // 채널 삭제 - DELETE /api/channels/{channelId}
