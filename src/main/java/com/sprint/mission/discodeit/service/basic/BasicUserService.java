@@ -34,7 +34,6 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    @Transactional
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.username());
@@ -44,22 +43,8 @@ public class BasicUserService implements UserService {
         User user = new User(userRequest.username(), userRequest.email(), userRequest.password(), null);
 
         // 선택적으로 프로필 등록
-        profile.ifPresent(file -> {
-                 try{
-                    log.debug("프로필 이미지 저장 - fileName: {}", file.getOriginalFilename());
-                    BinaryContent bc = new BinaryContent(
-                         file.getOriginalFilename(),
-                         file.getContentType(),
-                         file.getSize()
-                    );
-                    BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
-                    binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                    user.updateProfile(savedBinaryContent);
-                    log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
-                 } catch (IOException e){
-                     throw new FileStorageException(file.getOriginalFilename());
-                 }
-                });
+        profile.ifPresent(file -> postProfile(profile, user));
+
         User savedUser = userRepository.save(user);
         userStatusRepository.save(new UserStatus(user));
         log.info("사용자 생성 성공 - userId: {}", savedUser.getId());
@@ -105,21 +90,12 @@ public class BasicUserService implements UserService {
 
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
-                    try{
-                        log.debug("프로필 이미지 수정 - fileName: {}", file.getOriginalFilename());
-                        BinaryContent bc = new BinaryContent(
-                                file.getOriginalFilename(),
-                                file.getContentType(),
-                                file.getSize()
-                        );
-                        BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
-                        binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
-                        user.updateProfile(savedBinaryContent);
-                        log.debug("프로필 이미지 수정 성공 - userId: {}, fileName: {}", userID, file.getOriginalFilename());
-                    } catch (IOException e){
-                        throw new FileStorageException(file.getOriginalFilename());
-                    }
-                });
+                // 기존에 프로필 존재 시 삭제
+                if (user.getProfile() != null){
+                    binaryContentRepository.delete(user.getProfile());
+                }
+                postProfile(profile, user);
+        });
 
         log.info("사용자 수정 성공 - userId: {}", userID);
         return userMapper.toDTO(user);
@@ -132,7 +108,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        userRepository.deleteById(user.getId());
+        userRepository.delete(user);
         log.info("사용자 삭제 성공 - userId: {}", userId);
     }
 
@@ -148,5 +124,25 @@ public class BasicUserService implements UserService {
         if(userRepository.existsByEmail(email)){
             throw new AlreadyExistsEmailException(email);
         }
+    }
+
+    // 프로필 등록
+    public void postProfile(Optional<MultipartFile> profile, User user) {
+        profile.ifPresent(file -> {
+            try{
+                log.debug("프로필 이미지 저장 - fileName: {}", file.getOriginalFilename());
+                BinaryContent bc = new BinaryContent(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getSize()
+                );
+                BinaryContent savedBinaryContent = binaryContentRepository.save(bc);
+                binaryContentStorage.put(savedBinaryContent.getId(), file.getBytes());
+                user.updateProfile(savedBinaryContent);
+                log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
+            } catch (IOException e){
+                throw new FileStorageException(file.getOriginalFilename());
+            }
+        });
     }
 }

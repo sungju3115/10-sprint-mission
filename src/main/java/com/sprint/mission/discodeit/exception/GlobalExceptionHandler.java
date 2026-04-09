@@ -43,7 +43,9 @@ public class GlobalExceptionHandler {
         Map<String, Object> details = ex.getBindingResult().getFieldErrors().stream()
                         .collect(Collectors.toMap(
                                 FieldError::getField,
-                                FieldError::getDefaultMessage
+                                error -> error.getDefaultMessage() != null
+                                        ? error.getDefaultMessage()
+                                        : "유효하지 않은 값입니다"
                         ));
 
         log.warn("[MethodArgumentNotValidException] {}", ex.getMessage(), ex);
