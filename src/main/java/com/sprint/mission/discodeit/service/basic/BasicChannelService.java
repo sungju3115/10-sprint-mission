@@ -50,11 +50,11 @@ public class BasicChannelService implements ChannelService {
 
         Channel channel = channelMapper.toEntity(request);
         // [저장]
-        Channel savedChannel = channelRepository.save(channel);
+        channelRepository.save(channel);
 
-        log.info("Public 채널 생성 성공 - channelId: {}", savedChannel.getId());
+        log.info("Public 채널 생성 성공 - channelId: {}", channel.getId());
         // 초기 channel 생성 시 빈 리스트, null 반환해주는 게 맞을려나
-        return toChannelDTO(savedChannel, new ArrayList<>(), null);
+        return toChannelDTO(channel, new ArrayList<>(), null);
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
@@ -66,9 +66,9 @@ public class BasicChannelService implements ChannelService {
 
         // private channel의 userList
         List<UUID> users = request.participantIds();
-        List<UserDTO> userList = new ArrayList<>();
+        List<UserDTO> userDtoList = new ArrayList<>();
         // channel 영속화 -> readStatus 영속화
-        Channel savedChannel = channelRepository.save(channel);
+        channelRepository.save(channel);
 
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
         for(UUID userId : users) {
@@ -76,12 +76,12 @@ public class BasicChannelService implements ChannelService {
                     .orElseThrow(() -> new UserNotFoundException(userId));
             ReadStatus status = new ReadStatus(user, channel);
             readStatusRepository.save(status);
-            userList.add(userMapper.toDTO(user));
+            userDtoList.add(userMapper.toDTO(user));
         }
 
-        log.info("Private 채널 생성 성공 - channelId: {}", savedChannel.getId());
+        log.info("Private 채널 생성 성공 - channelId: {}", channel.getId());
         // 초기 생성 시에는 lastMessageAt은 null ??
-        return toChannelDTO(savedChannel, userList, null);
+        return toChannelDTO(channel, userDtoList, null);
     }
 
     @Transactional(readOnly = true)
@@ -166,10 +166,8 @@ public class BasicChannelService implements ChannelService {
 
         Instant lastMessageAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(channelID);
 
-        // [저장]
-        Channel savedChannel = channelRepository.save(channel);
-        log.info("채널 수정 성공 - channelId: {}", savedChannel.getId());
-        return toChannelDTO(savedChannel, participants, lastMessageAt);
+        log.info("채널 수정 성공 - channelId: {}", channel.getId());
+        return toChannelDTO(channel, participants, lastMessageAt);
     }
 
     // channel 삭제
@@ -179,9 +177,7 @@ public class BasicChannelService implements ChannelService {
         // 존재 확인
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
-        messageRepository.deleteAllByChannelId(channelId);
-        readStatusRepository.deleteAllByChannelId(channelId);
-        channelRepository.deleteById(channelId);
+        channelRepository.delete(channel);
         log.info("채널 삭제 성공 - channelId: {}", channelId);
     }
 
