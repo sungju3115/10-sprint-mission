@@ -30,13 +30,19 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDTO create(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.contentType(), (long) request.bytes().length);
-        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        // binaryContent 새로 생성
+        BinaryContent binaryContent = new BinaryContent(
+                request.fileName(),
+                request.contentType(),
+                (long) request.bytes().length
+        );
+        // save -> binaryContent가 영속성 컨텍스트에 등록 및 이때 Id 부여
+        binaryContentRepository.save(binaryContent);
 
-        binaryContentStorage.put(savedBinaryContent.getId(), request.bytes());
+        binaryContentStorage.put(binaryContent.getId(), request.bytes());
 
-        log.info("파일 업로드 성공 - fileId: {}, fileName: {}", savedBinaryContent.getId(), savedBinaryContent.getFileName());
-        return binaryContentMapper.toDTO(savedBinaryContent);
+        log.info("파일 업로드 성공 - fileId: {}, fileName: {}", binaryContent.getId(), binaryContent.getFileName());
+        return binaryContentMapper.toDTO(binaryContent);
     }
 
     @Override
@@ -63,7 +69,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID contentID) {
         BinaryContent binaryContent = binaryContentRepository.findById(contentID)
                 .orElseThrow(() -> new BinaryContentNotFound(contentID));
-        binaryContentRepository.deleteById(binaryContent.getId());
+        binaryContentRepository.delete(binaryContent);
         log.info("파일 삭제 성공 - contentID: {}", contentID);
     }
 
