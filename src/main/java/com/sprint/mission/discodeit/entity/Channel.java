@@ -16,13 +16,13 @@ public class Channel extends BaseUpdatableEntity {
     // 필드
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    ChannelType type;
+    private ChannelType type;
 
     @Column(length = 100)
-    String name;
+    private String name;
 
     @Column(length = 500)
-    String description;
+    private String description;
 
     // Public Channel 생성자
     public Channel(String name, String description) {
