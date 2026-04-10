@@ -127,13 +127,12 @@ class BasicUserServiceTest {
         UUID userId = UUID.randomUUID();
 
         given(userRepository.findById(any(UUID.class))).willReturn(Optional.of(mockUser));
-        given(mockUser.getId()).willReturn(userId);
 
         // when
         basicUserService.deleteUser(userId);
 
         // then
-        then(userRepository).should().deleteById(any(UUID.class));
+        then(userRepository).should().delete(any());
     }
 
     @Test
