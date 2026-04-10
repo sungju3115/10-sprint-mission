@@ -362,18 +362,18 @@ JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"
   ![스크린샷 2026-04-08 오후 2.15.44.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_44oHP2/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.15.44.png)
 - [X] ECS
   - 실행 중인 태스크 구성정보가 표시된 AWS 콘솔 페이지 스크린샷 이미지
-  ![스크린샷 2026-04-08 오후 2.16.41.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_FJ2no1/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.16.41.png)
+ ![스크린샷 2026-04-08 오후 2.16.41.png](/Users/jeonseungju/Desktop/스크린샷 2026-04-10 오전 8.19.49.png)
   - 배포된 EC2 엔드포인트
   - 52.79.181.4 
 
 - [X] VPC
   - 보안 그룹의 인바운드 규칙을 확인할 수 있는 AWS 콘솔 페이지 스크린샷 이미지
   - RDS 보안 그룹
-  ![스크린샷 2026-04-08 오후 2.20.29.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_LbRbn4/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.20.29.png)
+    ![스크린샷 2026-04-08 오후 2.20.29.png](/Users/jeonseungju/Desktop/스크린샷 2026-04-10 오전 8.19.49.png)
   - ECS 보안 그룹
   ![스크린샷 2026-04-08 오후 2.21.04.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_sjyOND/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.21.04.png)
   - EC2 보안 그룹
-  ![스크린샷 2026-04-08 오후 2.22.06.png](../../../../../var/folders/_6/pq1yl7555rl8hbt7lgkz2grm0000gn/T/TemporaryItems/NSIRD_screencaptureui_Cat0xi/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-04-08%20%EC%98%A4%ED%9B%84%202.22.06.png)
+    ![스크린샷 2026-04-08 오후 2.22.06.png](/Users/jeonseungju/Desktop/스크린샷 2026-04-10 오전 8.19.49.png)
 
 - [X] IAM
   - 사용자의 권한 정책이 표시된 AWS 콘솔 페이지 스크린샷 이미지

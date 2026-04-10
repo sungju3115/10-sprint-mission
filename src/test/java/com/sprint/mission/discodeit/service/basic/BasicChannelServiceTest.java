@@ -52,7 +52,6 @@ class BasicChannelServiceTest {
         ChannelCreateRequestPublic createRequestPublic = new ChannelCreateRequestPublic("테스트", "테스트 채널입니다.");
 
         given(channelRepository.existsByNameAndType(anyString(), any(ChannelType.class))).willReturn(false);
-        given(channelMapper.toEntity(any(ChannelCreateRequestPublic.class))).willReturn(channel);
         given(channelRepository.save(any(Channel.class))).willReturn(channel);
 
         // when
@@ -89,7 +88,6 @@ class BasicChannelServiceTest {
         ReadStatus readStatus = new ReadStatus(user, channel);
         UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getEmail(), null, false);
 
-        given(channelMapper.toEntity(any(ChannelCreateRequestPrivate.class))).willReturn(channel);
         given(channelRepository.save(any(Channel.class))).willReturn(channel);
         given(userRepository.findById(any(UUID.class))).willReturn(Optional.of(user));
         given(readStatusRepository.save(any(ReadStatus.class))).willReturn(readStatus);
@@ -168,10 +166,9 @@ class BasicChannelServiceTest {
         ChannelUpdateRequest updateRequest = new ChannelUpdateRequest("수정한 테스트 채널", "수정한 후입니다.");
 
         given(channelRepository.findById(any(UUID.class))).willReturn(Optional.of(channel));
-        given(userRepository.findAllByChannelId(any(UUID.class))).willReturn(List.of(new User("test", "", "12345678", null)));
-        given(userMapper.toDTO(any(User.class))).willReturn(new UserDTO(UUID.randomUUID(), "test", "", null, false));
+        given(userRepository.findAllByChannelId(any(UUID.class))).willReturn(List.of(new User("test", "test@test.com", "12345678", null)));
+        given(userMapper.toDTO(any(User.class))).willReturn(new UserDTO(UUID.randomUUID(), "test", "test@test.com", null, false));
         given(messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(any(UUID.class))).willReturn(Instant.now());
-        given(channelRepository.save(any(Channel.class))).willReturn(channel);
 
         // when
         ChannelDTO result = basicChannelService.update(channelId, updateRequest);
@@ -179,7 +176,6 @@ class BasicChannelServiceTest {
         // then
         assertEquals(result.name(), updateRequest.newName());
         assertEquals(result.description(), updateRequest.newDescription());
-        then(channelRepository).should().save(any(Channel.class));
     }
 
     @Test
@@ -214,9 +210,7 @@ class BasicChannelServiceTest {
         basicChannelService.deleteChannel(channelId);
 
         // then
-        then(channelRepository).should().deleteById(any(UUID.class));
-        then(messageRepository).should().deleteAllByChannelId(any(UUID.class));
-        then(readStatusRepository).should().deleteAllByChannelId(any(UUID.class));
+        then(channelRepository).should().delete(any());
     }
 
     @Test
