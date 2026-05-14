@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +33,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
@@ -40,7 +42,7 @@ public class BasicUserService implements UserService {
         validateEmail(userRequest.email());
 
         // user 생성 with DTO
-        User user = new User(userRequest.username(), userRequest.email(), userRequest.password(), null);
+        User user = new User(userRequest.username(), userRequest.email(), passwordEncoder.encode(userRequest.password()), null);
 
         // 선택적으로 프로필 등록
         profile.ifPresent(file -> postProfile(profile, user));
@@ -86,7 +88,7 @@ public class BasicUserService implements UserService {
         });
 
         // user 비밀번호 선택적 업데이트
-        Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
+        Optional.ofNullable(request.newPassword()).ifPresent(newPassword -> user.updatePassword(passwordEncoder.encode(newPassword)));
 
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
