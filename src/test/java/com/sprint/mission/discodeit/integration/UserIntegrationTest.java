@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.integration;
 
-import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
