@@ -27,7 +27,7 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
         // role update , 동시에 같은 유저의 role을 바꾸는 상황은 X
-        user.updateRole(request.role());
+        user.updateRole(request.newRole());
 
         // 명시적 save X, find로 영속성 컨텍스트에 user가 올라있기 때문
         return userMapper.toDTO(user);
