@@ -33,6 +33,10 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus userStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
+
     // 생성자
     public User(String username, String email, String password, BinaryContent profile) {
         super();
@@ -40,6 +44,8 @@ public class User extends BaseUpdatableEntity {
         this.email = email;
         this.password = password;
         this.profile = profile;
+        // default role = USER로 설정
+        this.role = Role.USER;
     }
 
     // 비즈니스 메서드
@@ -55,6 +61,9 @@ public class User extends BaseUpdatableEntity {
     }
     public void updateProfile(BinaryContent profile) {
         this.profile = profile;
+    }
+    public void updateRole(Role role) {
+        this.role = role;
     }
 }
 

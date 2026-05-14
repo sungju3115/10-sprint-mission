@@ -24,6 +24,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(60) NOT NULL,
     profile_id UUID UNIQUE,
+    role VARCHAR(20) NOT NULL,
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id)
         REFERENCES binary_contents(id)
         ON DELETE SET NULL
@@ -85,3 +86,6 @@ ALTER TABLE read_statuses DROP CONSTRAINT fk_user_id;
 ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_statuses_user
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE users
+    ADD role VARCHAR(20) NOT NULL;
