@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.AuthServiceRequest;
+import com.sprint.mission.discodeit.dto.auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.login.InvalidPasswordException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.AuthMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +17,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
-    private final AuthMapper authMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-//    @Transactional(readOnly = true)
-//    public UserDTO login(AuthServiceRequest request){
-//        User user = userRepository.findByUsernameWithProfile(request.username())
-//                .orElseThrow(() -> new UserNotFoundException(request.username()));
-//
-//        // 해시 비교로 교체
-//        if(!passwordEncoder.matches(request.password(), user.getPassword())){
-//            throw new InvalidPasswordException(request.username());
-//        }
-//
-//        log.info("로그인 성공 - username: {}", request.username());
-//        return authMapper.toResponse(user);
-//    }
+    @Override
+    @Transactional
+    public UserDTO updateRole(RoleUpdateRequest request) {
+        // user 조회
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+        // role update , 동시에 같은 유저의 role을 바꾸는 상황은 X
+        user.updateRole(request.role());
+
+        // 명시적 save X, find로 영속성 컨텍스트에 user가 올라있기 때문
+        return userMapper.toDTO(user);
+    }
 }
