@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -24,37 +25,44 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final BasicAuthService authService;
 
-    // 로그인 - POST /api/auth/login
-    @PostMapping("/login")
-    @Operation(summary = "로그인")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "로그인 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserDTO.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "사용자를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject("User with username : {username} not found")
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "비밀번호가 일치하지 않음",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject("Wrong password")
-                    )
-            )
-    })
-    ResponseEntity<UserDTO> login(@Valid @RequestBody AuthServiceRequest request){
-        log.info("로그인 요청 - username: {}", request.username());
-        return ResponseEntity.ok(authService.login(request));
+//    // 로그인 - POST /api/auth/login
+//    @PostMapping("/login")
+//    @Operation(summary = "로그인")
+//    @ApiResponses({
+//            @ApiResponse(
+//                    responseCode = "200",
+//                    description = "로그인 성공",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            schema = @Schema(implementation = UserDTO.class)
+//                    )
+//            ),
+//            @ApiResponse(
+//                    responseCode = "404",
+//                    description = "사용자를 찾을 수 없음",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject("User with username : {username} not found")
+//                    )
+//            ),
+//            @ApiResponse(
+//                    responseCode = "400",
+//                    description = "비밀번호가 일치하지 않음",
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            examples = @ExampleObject("Wrong password")
+//                    )
+//            )
+//    })
+//    ResponseEntity<UserDTO> login(@Valid @RequestBody AuthServiceRequest request){
+//        log.info("로그인 요청 - username: {}", request.username());
+//        return ResponseEntity.ok(authService.login(request));
+//    }
+
+    @GetMapping("csrf-token")
+    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+        String tokenValue = csrfToken.getToken();
+        log.debug("CSRF Token: {}", tokenValue);
+        return ResponseEntity.ok().header("X-CSRF-TOKEN", tokenValue).build();
     }
 }
