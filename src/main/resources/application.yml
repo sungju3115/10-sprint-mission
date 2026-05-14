@@ -40,6 +40,8 @@ discodeit:
 logging:
   level:
     root: INFO
+    org.springframework.security: TRACE
+    org.springframework.security.web.FilterChainProxy: TRACE
 
 management:
   endpoints:
