@@ -30,6 +30,8 @@ public class AdminInitializer implements ApplicationRunner {
                 null
         );
 
+        admin.updateRole(Role.ADMIN);
+
         userRepository.save(admin);
     }
 }
