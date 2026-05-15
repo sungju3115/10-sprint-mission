@@ -45,17 +45,6 @@ CREATE TABLE read_statuses (
     last_read_at TIMESTAMPTZ NOT NULL
 );
 
-CREATE TABLE user_statuses (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
-    user_id UUID NOT NULL UNIQUE,
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ
-);
-
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL,
@@ -86,6 +75,3 @@ ALTER TABLE read_statuses DROP CONSTRAINT fk_user_id;
 ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_statuses_user
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE users
-    ADD role VARCHAR(20) NOT NULL;
