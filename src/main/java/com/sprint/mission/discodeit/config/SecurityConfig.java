@@ -16,11 +16,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -83,7 +86,17 @@ public class SecurityConfig {
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
                         )
-                );
+                )
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(1)              // 허용 세션 1
+                                .sessionRegistry(sessionRegistry())
+                                .maxSessionsPreventsLogin(false) // 로그인 시 기존 꺼 만료
+                                .expiredSessionStrategy(event ->
+                                        event.getResponse().sendError(HttpServletResponse.SC_UNAUTHORIZED, "세션이 만료되었습니다."))
+                        )
+                )
+        ;
 
         return http.build();
     }
@@ -108,5 +121,15 @@ public class SecurityConfig {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 }
