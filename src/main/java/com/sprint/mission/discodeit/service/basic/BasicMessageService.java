@@ -32,7 +32,7 @@ import java.util.*;
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
-@Service
+@Service("messageService")
 public class BasicMessageService implements MessageService {
     // 필드
     private final MessageRepository messageRepository;
@@ -136,4 +136,10 @@ public class BasicMessageService implements MessageService {
         log.info("메시지 삭제 성공 - messageId: {}", messageID);
     }
 
+    private boolean isMessageOwner(UUID messageId, UUID userId) {
+        UUID authorId = messageRepository.findAuthorIdById(messageId)
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
+
+        return authorId.equals(userId);
+    }
 }
