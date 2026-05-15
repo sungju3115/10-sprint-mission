@@ -1,15 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +36,6 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -48,7 +51,6 @@ public class BasicUserService implements UserService {
         profile.ifPresent(file -> postProfile(profile, user));
 
         userRepository.save(user);
-        userStatusRepository.save(new UserStatus(user));
         log.info("사용자 생성 성공 - userId: {}", user.getId());
         return userMapper.toDTO(user);
     }
@@ -92,11 +94,11 @@ public class BasicUserService implements UserService {
 
         // user의 프로필 선택적 업데이트
         profile.ifPresent(file -> {
-                // 기존에 프로필 존재 시 삭제
-                if (user.getProfile() != null){
-                    binaryContentRepository.delete(user.getProfile());
-                }
-                postProfile(profile, user);
+            // 기존에 프로필 존재 시 삭제
+            if (user.getProfile() != null) {
+                binaryContentRepository.delete(user.getProfile());
+            }
+            postProfile(profile, user);
         });
 
         log.info("사용자 수정 성공 - userId: {}", userID);
@@ -115,15 +117,15 @@ public class BasicUserService implements UserService {
     }
 
     // User 이름 유효성 검증
-    public void validateName(String username){
-        if(userRepository.existsByUsername(username)){
+    public void validateName(String username) {
+        if (userRepository.existsByUsername(username)) {
             throw new AlreadyExistsNameException(username);
         }
     }
 
     // 이메일 유효성 검증
-    public void validateEmail(String email){
-        if(userRepository.existsByEmail(email)){
+    public void validateEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
             throw new AlreadyExistsEmailException(email);
         }
     }
@@ -131,7 +133,7 @@ public class BasicUserService implements UserService {
     // 프로필 등록
     public void postProfile(Optional<MultipartFile> profile, User user) {
         profile.ifPresent(file -> {
-            try{
+            try {
                 log.debug("프로필 이미지 저장 - fileName: {}", file.getOriginalFilename());
                 BinaryContent bc = new BinaryContent(
                         file.getOriginalFilename(),
@@ -142,7 +144,7 @@ public class BasicUserService implements UserService {
                 binaryContentStorage.put(bc.getId(), file.getBytes());
                 user.updateProfile(bc);
                 log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new FileStorageException(file.getOriginalFilename());
             }
         });
