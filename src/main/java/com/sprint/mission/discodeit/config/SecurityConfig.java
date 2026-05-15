@@ -47,6 +47,14 @@ public class SecurityConfig {
                 // 토큰 발급을 위해 모든 요청 허용
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                        // swagger
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // actuator
+                        .requestMatchers("/actuator/**").permitAll()
+                        // 회원가입
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // 로그인, 로그아웃, Csrf 토큰
+                        .requestMatchers("/api/auth/**").permitAll()
                         // 사용자 권한 수정
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
                         .requestMatchers("/api/users/**",
@@ -54,14 +62,6 @@ public class SecurityConfig {
                                 "/api/binaryContents/**",
                                 "/api/messages/**",
                                 "/api/readStatuses/**").hasRole("USER")
-                        // 로그인, 로그아웃, Csrf 토큰
-                        .requestMatchers("api/auth/**").permitAll()
-                        // 회원가입
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        // swagger
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // actuator
-                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 토큰 Repo vs Request가 Handler -> Filter가 비교를 실행
