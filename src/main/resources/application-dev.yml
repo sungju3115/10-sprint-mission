@@ -8,9 +8,13 @@ spring:
       client:
         url: http://localhost:9090
 
+  sql:
+    init:
+      mode: always
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
