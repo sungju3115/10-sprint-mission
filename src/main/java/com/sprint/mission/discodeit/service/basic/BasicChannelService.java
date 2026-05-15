@@ -178,9 +178,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         // 존재 확인
-        Channel channel = channelRepository.findById(channelId)
+        channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
-        channelRepository.delete(channel);
+        channelRepository.deleteById(channelId);
         log.info("채널 삭제 성공 - channelId: {}", channelId);
     }
 

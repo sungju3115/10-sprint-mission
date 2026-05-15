@@ -15,7 +15,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u\n" +
             "    FROM ReadStatus rs\n" +
             "    JOIN rs.user u\n" +
-            "    LEFT JOIN FETCH u.userStatus\n" +
             "    LEFT JOIN FETCH u.profile\n" +
             "    WHERE rs.channel.id = :channelId")
     List<User> findAllByChannelId(@Param("channelId") UUID channelId);
@@ -23,18 +22,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT rs\n" +
             "    FROM ReadStatus rs\n" +
             "    JOIN FETCH rs.user u\n" +
-            "    LEFT JOIN FETCH u.userStatus\n" +
             "    LEFT JOIN FETCH u.profile\n" +
             "    JOIN FETCH rs.channel\n" +
             "    WHERE rs.channel.id IN :channelIds")
     List<ReadStatus> findAllByChannelIdIn(@Param("channelIds") List<UUID> channelIds);
 
-    @Query("SELECT u FROM User u " +
-            "LEFT JOIN FETCH u.profile " +
-            "JOIN fetch u.userStatus")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.profile")
     List<User> findAllWithProfileAndStatus();
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.userStatus LEFT JOIN FETCH u.profile WHERE u.username = :username")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.profile WHERE u.username = :username")
     Optional<User> findByUsernameWithProfile(@Param("username") String username);
 
 

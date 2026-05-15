@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusDTO;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,7 +35,6 @@ import java.util.UUID;
 @Tag(name="User", description = "User API")
 public class UserController {
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     // user 등록 - POST /api/users
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -168,34 +166,4 @@ public class UserController {
         List<UserDTO> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
-
-    // user 온라인 상태 업데이트 - PATCH /api/users/{userId}/userStatus
-    @PatchMapping( "/{userId}/userStatus")
-    @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User 온라인 상태 업데이트 성공",
-                    content = @Content(schema = @Schema(implementation = UserStatusDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User 온라인 상태 업데이트 실패",
-                    content = @Content(examples = @ExampleObject("해당 User를 찾을 수 없음"))
-            )
-    })
-    public ResponseEntity<UserStatusDTO> updateStatus(
-            @Parameter(
-                    description = "업데이트할 userId",
-                    example = "123e4567-e89b-12d3-a456-426655440000",
-                    required = true,
-                    schema = @Schema(type = "string", format = "uuid")
-            )
-            @PathVariable UUID userId,
-            @Valid @RequestBody UserStatusUpdateRequest request
-    ){
-        log.info("사용자 온라인 상태 업데이트 요청 - userId: {}, newLastActiveAt: {}", userId, request.newLastActiveAt());
-        return ResponseEntity.ok(userStatusService.updateByUserID(userId, request));
-    }
-
 }
