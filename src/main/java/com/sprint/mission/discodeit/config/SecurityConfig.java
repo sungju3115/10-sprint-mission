@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
@@ -18,6 +19,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -35,7 +37,7 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
         // 프론트 쪽에 js 접근 허용
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookiePath("/");
@@ -46,6 +48,12 @@ public class SecurityConfig {
                                 .loginProcessingUrl("/api/auth/login")
                                 .successHandler(loginSuccessHandler)
                                 .failureHandler(loginFailureHandler)
+                )
+                .rememberMe(remember -> remember
+                        .key("uniqueAndSecret")        // 토큰 해싱을 위한 고유 키 (절대 노출 금지)
+                        .tokenValiditySeconds(1800) // 쿠키 유효 기간 (예: 30일)
+                        .userDetailsService(userDetailsService) // 사용자 정보를 다시 조회할 서비스 (필수!)
+                        .rememberMeParameter("remember-me") // 프론트 체크박스의 name 속성값
                 )
                 // 토큰 발급을 위해 모든 요청 허용
                 .authorizeHttpRequests(auth -> auth
@@ -95,8 +103,7 @@ public class SecurityConfig {
                                 .expiredSessionStrategy(event ->
                                         event.getResponse().sendError(HttpServletResponse.SC_UNAUTHORIZED, "세션이 만료되었습니다."))
                         )
-                )
-        ;
+                );
 
         return http.build();
     }
@@ -132,4 +139,5 @@ public class SecurityConfig {
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
     }
+
 }
