@@ -2,12 +2,11 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.service.MessageService;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -17,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -61,22 +61,22 @@ public class MessageController {
             )
     })
     public ResponseEntity<MessageDTO> postMessage(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
-                                                 @RequestPart(value="attachments", required = false) List<MultipartFile> attachments
-                                       ){
+                                                  @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+    ) {
         log.info("메시지 생성 요청 - channelId: {}, authorId: {}", request.channelId(), request.authorId());
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
                 .map(files -> files.stream()
-                .map(file -> {
-                    try {
-                        return new BinaryContentCreateRequest(
-                                file.getOriginalFilename(),
-                                file.getContentType(),
-                                file.getBytes()
-                        );
-                    }catch (IOException e){
-                        throw new FileStorageException(file.getOriginalFilename());
-                    }
-                }).toList())
+                        .map(file -> {
+                            try {
+                                return new BinaryContentCreateRequest(
+                                        file.getOriginalFilename(),
+                                        file.getContentType(),
+                                        file.getBytes()
+                                );
+                            } catch (IOException e) {
+                                throw new FileStorageException(file.getOriginalFilename());
+                            }
+                        }).toList())
                 .orElse(new ArrayList<>());
         return ResponseEntity.ok(messageService.create(request, attachmentRequests));
     }
@@ -107,7 +107,7 @@ public class MessageController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID messageId,
-            @Valid @RequestBody MessageUpdateRequest request){
+            @Valid @RequestBody MessageUpdateRequest request) {
         log.info("메시지 수정 요청 - messageId: {}", messageId);
         return ResponseEntity.ok(messageService.update(messageId, request));
     }
@@ -135,7 +135,7 @@ public class MessageController {
                     schema = @Schema(type = "string", format = "uuid")
             )
             @PathVariable UUID messageId
-    ){
+    ) {
         log.info("메시지 삭제 요청 - messageId: {}", messageId);
         messageService.deleteMessage(messageId);
     }
@@ -159,7 +159,7 @@ public class MessageController {
     })
     public PageResponse<MessageDTO> getAllMessages(@RequestParam UUID channelId,
                                                    @RequestParam(value = "cursor", required = false) Instant cursor,
-                                                   Pageable pageable){
+                                                   Pageable pageable) {
         log.debug("채널 메시지 목록 조회 요청 - channelId: {}, cursor: {}, pageable: {}", channelId, cursor, pageable);
         return messageService.findMessagesByChannel(channelId, cursor, pageable);
     }
