@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class ChannelController {
                     schema = @Schema (implementation = ChannelDTO.class)
             )
     )
+    @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
     public ResponseEntity<ChannelDTO> postPublicChannel(@Valid @RequestBody ChannelCreateRequestPublic request){
         log.info("Public 채널 생성 요청 - name: {}", request.name());
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -150,6 +152,7 @@ public class ChannelController {
                     )
             )
     })
+    @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
     public ResponseEntity<ChannelDTO> updateChannel(
             @Parameter(
                     description = "수정할 Channel Id",
@@ -181,6 +184,7 @@ public class ChannelController {
             )
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ROLE_CHANNEL_MANAGER')")
     public void deleteChannel(
             @Parameter(
                     description = "삭제할 Channel Id",
