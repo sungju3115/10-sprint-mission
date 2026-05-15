@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -79,6 +80,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("username 혹은 email이 중복됩니다"))
             )
     })
+    @PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")
     public ResponseEntity<UserDTO> updateUser(
             @Parameter(
                     description = "수정할 userId",
@@ -109,6 +111,7 @@ public class UserController {
                     content = @Content(examples = @ExampleObject("해당 User를 찾지 못함"))
             )
     })
+    @PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")
     public void deleteUser(
             @Parameter(
                     description = "삭제할 userId",
