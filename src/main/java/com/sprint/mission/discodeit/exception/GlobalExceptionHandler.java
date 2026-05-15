@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,14 @@ public class GlobalExceptionHandler {
         log.warn("[MethodArgumentNotValidException] {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.from(HttpStatus.BAD_REQUEST, details, ex));
+    }
+
+    // 메서드 레벨 권한 없음 핸들러 메서드 추가
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("[AccessDeniedException] {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.from(HttpStatus.FORBIDDEN, ex));
     }
 
     // 클라이언트 요청 오류
