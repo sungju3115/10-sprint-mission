@@ -136,7 +136,7 @@ public class BasicMessageService implements MessageService {
         log.info("메시지 삭제 성공 - messageId: {}", messageID);
     }
 
-    private boolean isMessageOwner(UUID messageId, UUID userId) {
+    public boolean isMessageOwner(UUID messageId, UUID userId) {
         UUID authorId = messageRepository.findAuthorIdById(messageId)
                 .orElseThrow(() -> new MessageNotFoundException(messageId));
 
