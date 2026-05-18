@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,6 +19,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     void deleteAllByChannelId(@Param("channelId") UUID channelId);
 
     List<Message> findAllByAuthor_Id(UUID authorId);
+
     List<Message> findAllByChannelIdIn(List<UUID> channelIds);
 
 
@@ -30,6 +30,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
                                                 @Param("createdAt") Instant createdAt,
                                                 Pageable pageable);
+
     @Query("SELECT Max(m.createdAt) FROM Message m WHERE m.channel.id = :channelId")
     Instant findFirstByChannelIdOrderByCreatedAtDesc(@Param("channelId") UUID channelId);
 
