@@ -37,6 +37,10 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getUserDto(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         return ResponseEntity
                 .ok(((DiscodeitUserDetails) userDetails).getUserDTO());
     }
