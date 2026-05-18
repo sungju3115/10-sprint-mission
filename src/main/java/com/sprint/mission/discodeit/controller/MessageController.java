@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,6 +100,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Message not found"))
             )
     })
+    @PreAuthorize("@messageService.isMessageOwner(#messageId, authentication.principal.userDTO.id)")
     public ResponseEntity<MessageDTO> updateMessage(
             @Parameter(
                     description = "수정할 messageId",
@@ -127,6 +129,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Message not found"))
             )
     })
+    @PreAuthorize("@messageService.isMessageOwner(#messageId, authentication.principal.userDTO.id)")
     public void deleteMessage(
             @Parameter(
                     description = "삭제할 messageId",
