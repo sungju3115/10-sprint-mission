@@ -14,9 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Slf4j
@@ -75,7 +73,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> download(UUID binaryContentID){
+    public ResponseEntity<?> download(UUID binaryContentID) {
         BinaryContent bt = binaryContentRepository.findById(binaryContentID)
                 .orElseThrow(() -> new BinaryContentNotFound(binaryContentID));
 
