@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,11 @@ public class AuthController {
     private final BasicAuthService authService;
 
     @GetMapping("/csrf-token")
-    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+    public ResponseEntity<Void> getCsrfToken(HttpServletRequest request) {
+        CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+        if (csrfToken == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
         String tokenValue = csrfToken.getToken();
         log.debug("CSRF Token: {}", tokenValue);
         return ResponseEntity
