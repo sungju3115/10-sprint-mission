@@ -74,6 +74,17 @@ CREATE TABLE message_attachments (
         ON DELETE CASCADE
 );
 
+CREATE TABLE notifications (
+                               id UUID PRIMARY KEY,
+                               created_at TIMESTAMPTZ NOT NULL,
+                               receiver_id UUID NOT NULL,
+                               CONSTRAINT fk_notifications_receiver FOREIGN KEY (receiver_id)
+                                   REFERENCES users(id)
+                                   ON DELETE CASCADE,
+                               title VARCHAR(255) NOT NULL,
+                               content VARCHAR(500) NOT NULL
+);
+
 ALTER TABLE read_statuses DROP CONSTRAINT fk_user_id;
 ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_statuses_user
