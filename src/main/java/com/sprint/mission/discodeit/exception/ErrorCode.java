@@ -28,7 +28,10 @@ public enum ErrorCode {
 
     // Storage
     FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다."),
-    DUPLICATE_FILE(HttpStatus.CONFLICT, "이미 존재하는 파일입니다.");
+    DUPLICATE_FILE(HttpStatus.CONFLICT, "이미 존재하는 파일입니다."),
+
+    // Notification
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다.");
 
     private final HttpStatus status;
     private final String message;
