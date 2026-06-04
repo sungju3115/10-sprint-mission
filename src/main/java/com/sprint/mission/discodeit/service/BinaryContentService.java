@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
@@ -14,4 +15,5 @@ public interface BinaryContentService {
     List<BinaryContentDTO> findAllByIdIn(List<UUID> contentIDs);
     void delete(UUID contentID);
     ResponseEntity<?> download(UUID contentID);
+    BinaryContentDTO updateStatus(UUID binaryContentId, BinaryContentStatus status);
 }

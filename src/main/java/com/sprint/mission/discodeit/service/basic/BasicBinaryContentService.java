@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFound;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -83,5 +84,15 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContentDTO dto = binaryContentMapper.toDTO(bt);
         log.debug("파일 다운로드 성공 - contentId: {}", binaryContentID);
         return binaryContentStorage.download(dto);
+    }
+
+    @Override
+    @Transactional
+    public BinaryContentDTO updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+                        .orElseThrow(() -> new BinaryContentNotFound(binaryContentId));
+
+        binaryContentRepository.updateStatus(binaryContentId, status);
+        return binaryContentMapper.toDTO(binaryContent);
     }
 }
