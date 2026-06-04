@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
@@ -141,7 +144,8 @@ public class BasicUserService implements UserService {
                         file.getSize()
                 );
                 binaryContentRepository.save(bc);
-                binaryContentStorage.put(bc.getId(), file.getBytes());
+                // event로 분리
+                applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(bc.getId(), file.getBytes()));
                 user.updateProfile(bc);
                 log.debug("프로필 이미지 저장 성공 - fileName: {}", file.getOriginalFilename());
             } catch (IOException e) {
