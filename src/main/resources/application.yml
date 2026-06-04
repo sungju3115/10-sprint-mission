@@ -44,6 +44,9 @@ logging:
     org.springframework.security.web.FilterChainProxy: TRACE
 
 management:
+  observations:
+    annotations:
+      enabled: true
   endpoints:
     web:
       exposure:
