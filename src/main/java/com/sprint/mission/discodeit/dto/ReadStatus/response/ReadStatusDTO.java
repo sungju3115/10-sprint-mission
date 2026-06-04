@@ -16,5 +16,7 @@ public record ReadStatusDTO(
         UUID channelId,
 
         @Schema(description = "마지막으로 읽은 시점", example = "2026-02-24T17:05:00Z")
-        Instant lastReadAt
+        Instant lastReadAt,
+
+        Boolean notificationEnabled
 ) {}
