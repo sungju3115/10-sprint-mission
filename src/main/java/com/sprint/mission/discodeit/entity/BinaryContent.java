@@ -19,10 +19,16 @@ import lombok.Setter;
 public class BinaryContent extends BaseEntity {
     @Column(nullable = false)
     private String fileName;
+
     @Column(nullable = false)
     private Long size;
+
     @Column(nullable = false)
     private String contentType;
+
+    @Column(nullable = false)
+    private BinaryContentStatus status;
+
     public BinaryContent(String fileName, String contentType, long size) {
         this.fileName = fileName;
         this.contentType = contentType;
