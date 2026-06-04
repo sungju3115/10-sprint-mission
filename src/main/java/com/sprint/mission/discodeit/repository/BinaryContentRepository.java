@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
 
@@ -12,5 +13,5 @@ public interface BinaryContentRepository extends JpaRepository<BinaryContent, UU
 
     @Modifying
     @Query("UPDATE BinaryContent bc SET bc.status = :status WHERE bc.id = :id")
-    void updateStatus(UUID id, BinaryContentStatus status);
+    void updateStatus(@Param("id") UUID id, @Param("status") BinaryContentStatus status);
 }
