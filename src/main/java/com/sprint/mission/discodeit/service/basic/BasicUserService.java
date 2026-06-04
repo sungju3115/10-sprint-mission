@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,7 +34,6 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
     // 필드
     private final UserRepository userRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final PasswordEncoder passwordEncoder;

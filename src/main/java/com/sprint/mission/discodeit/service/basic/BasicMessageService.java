@@ -2,10 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.NotPrivateChannelMemberException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -14,20 +15,18 @@ import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Transactional
@@ -39,10 +38,10 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageMapper messageMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final ReadStatusRepository readStatusRepository;
     private final PageResponseMapper pageResponseMapper;
     private final BinaryContentRepository binaryContentRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -68,7 +67,8 @@ public class BasicMessageService implements MessageService {
 
                     BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes.length);
                     binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(binaryContent.getId(), bytes);
+                    // 이벤트 발행 리팩토링
+                    applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), bytes));
                     return binaryContent;
                 }).toList();
         log.debug("첨부파일 저장 완료 - 총 {}개", attachments.size());
@@ -100,7 +100,7 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     public PageResponse<MessageDTO> findMessagesByChannel(UUID channelId, Instant createdAt, Pageable pageable) {
         Slice<MessageDTO> messageDTOSlice = messageRepository.findAllByChannelIdWithAuthor(channelId,
-                Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
+                        Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
                 .map(messageMapper::toDTO);
 
         Instant nextCursor = null;
@@ -110,7 +110,8 @@ public class BasicMessageService implements MessageService {
         }
 
         return pageResponseMapper.fromSlice(messageDTOSlice, nextCursor)
-;    }
+                ;
+    }
 
     @Override
     @Transactional
