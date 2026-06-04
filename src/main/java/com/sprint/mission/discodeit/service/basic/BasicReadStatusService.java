@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -72,7 +73,14 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
 
-        readStatus.updateLastReadTime();
+        // newLastReadAt이 있을 때만 시간 업데이트
+        Optional.ofNullable(request.newLastReadAt())
+                .ifPresent(t -> readStatus.updateLastReadTime());
+
+        // newNotificationEnabled가 있을 때만 알림 여부 업데이트
+        Optional.ofNullable(request.newNotificationEnabled())
+                .ifPresent(readStatus::updateNotificationEnabled);
+
         readStatusRepository.save(readStatus);
         log.info("ReadStatus 업데이트 성공 - readStatusId: {}", readStatusId);
         return readStatusMapper.toDto(readStatus);
