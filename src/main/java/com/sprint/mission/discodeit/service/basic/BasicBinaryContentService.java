@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFound;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     @Override
@@ -37,7 +40,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         // save -> binaryContent가 영속성 컨텍스트에 등록 및 이때 Id 부여
         binaryContentRepository.save(binaryContent);
 
-        binaryContentStorage.put(binaryContent.getId(), request.bytes());
+        applicationEventPublisher.publishEvent(new BinaryContentCreatedEvent(binaryContent.getId(), request.bytes()));
 
         log.info("파일 업로드 성공 - fileId: {}, fileName: {}", binaryContent.getId(), binaryContent.getFileName());
         return binaryContentMapper.toDTO(binaryContent);
