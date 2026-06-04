@@ -49,6 +49,8 @@ dependencies {
 	implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	runtimeOnly 'org.postgresql:postgresql'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
