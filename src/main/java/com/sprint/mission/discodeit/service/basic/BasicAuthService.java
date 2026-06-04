@@ -4,14 +4,17 @@ import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +27,8 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JwtTokenProvider jwtTokenProvider;
-    private final com.sprint.mission.discodeit.security.DiscodeitUserDetailsService userDetailsService;
+    private final DiscodeitUserDetailsService userDetailsService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -32,6 +36,13 @@ public class BasicAuthService implements AuthService {
         // user 조회
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+        // Role Update Event 발행!
+        applicationEventPublisher.publishEvent(new RoleUpdatedEvent(
+                user.getId(),
+                user.getRole().toString(),
+                request.newRole().toString()
+        ));
 
         // role update , 동시에 같은 유저의 role을 바꾸는 상황은 X
         user.updateRole(request.newRole());
