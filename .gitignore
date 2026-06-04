@@ -43,6 +43,7 @@ bin/
 # Misc
 HELP.md
 CLAUDE.md
+QUESTIONS.md
 
 .env
 discodeit.env
