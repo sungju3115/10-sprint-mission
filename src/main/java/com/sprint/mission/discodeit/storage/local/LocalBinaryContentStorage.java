@@ -44,6 +44,15 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         if (Files.exists(targetPath)) {
             throw new DuplicateFileException(id);
         }
+
+        // 지연
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        }
+
         try {
             Files.write(targetPath, content);
             return id;
