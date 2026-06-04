@@ -1,18 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /*
-* 이미지, 파일 등 바이너리 데이터를 표현하는 도메인 모델
-* 수정 불가능한 도메인 모델
-* */
+ * 이미지, 파일 등 바이너리 데이터를 표현하는 도메인 모델
+ * 수정 불가능한 도메인 모델
+ * */
 @Entity
 @Table(name = "binary_contents")
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
@@ -27,6 +23,7 @@ public class BinaryContent extends BaseUpdatableEntity {
     @Column(nullable = false)
     private String contentType;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BinaryContentStatus status;
 
