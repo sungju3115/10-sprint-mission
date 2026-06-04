@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.response.MessageDTO;
 import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -61,6 +62,7 @@ public class MessageController {
                     content = @Content(examples = @ExampleObject("Channel or user not found"))
             )
     })
+    @Timed("message.create.async")
     public ResponseEntity<MessageDTO> postMessage(@Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
                                                   @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
