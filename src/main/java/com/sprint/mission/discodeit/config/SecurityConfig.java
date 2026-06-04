@@ -63,7 +63,8 @@ public class SecurityConfig {
                                 "/api/channels/**",
                                 "/api/binaryContents/**",
                                 "/api/messages/**",
-                                "/api/readStatuses/**").hasRole("USER")
+                                "/api/readStatuses/**",
+                                "/api/notifications/**").hasRole("USER")
                         // 로그인, 로그아웃, Csrf 토큰, 토큰 재발급
                         .requestMatchers("/api/auth/login", "/api/auth/logout",
                                 "/api/auth/refresh", "/api/auth/csrf-token").permitAll()
