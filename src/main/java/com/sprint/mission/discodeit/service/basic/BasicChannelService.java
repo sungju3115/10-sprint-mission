@@ -78,6 +78,8 @@ public class BasicChannelService implements ChannelService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFoundException(userId));
             ReadStatus status = new ReadStatus(user, channel);
+            // ReadStatus notificationEnabled = true로 설정
+            status.setNotificationEnabled(true);
             readStatusRepository.save(status);
             userDtoList.add(userMapper.toDTO(user));
         }

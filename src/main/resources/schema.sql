@@ -44,7 +44,8 @@ CREATE TABLE read_statuses (
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id)
        REFERENCES channels(id)
        ON DELETE CASCADE,
-    last_read_at TIMESTAMPTZ NOT NULL
+    last_read_at TIMESTAMPTZ NOT NULL,
+    notification_enabled boolean Not NULL
 );
 
 CREATE TABLE messages (
