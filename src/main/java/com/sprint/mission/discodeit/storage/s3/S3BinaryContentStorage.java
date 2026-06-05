@@ -114,7 +114,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     @Recover
     public UUID recover(Exception ex, UUID id, byte[] bytes) {
-        String requestId = MDC.get("requestId");
+        String requestId = MDC.get("request_id");
         String title = "S3 파일 업로드 실패";
         String message = String.format(
                 "RequestId: %s\nBinaryContentId: %s\nError: %s",
