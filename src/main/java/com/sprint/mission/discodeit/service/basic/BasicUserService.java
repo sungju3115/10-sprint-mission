@@ -16,6 +16,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserDTO create(UserCreateRequest userRequest, Optional<MultipartFile> profile) {
         // 이름, 이메일 유효성 검증
         validateName(userRequest.username());
@@ -64,6 +67,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users")
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
         return userRepository.findAllWithProfileAndStatus().stream()
@@ -73,6 +77,7 @@ public class BasicUserService implements UserService {
 
     // 이름. 프로필 선택적 업데이트
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public UserDTO update(UUID userID, UserUpdateRequest request, Optional<MultipartFile> profile) {
         User user = userRepository.findById(userID)
@@ -108,6 +113,7 @@ public class BasicUserService implements UserService {
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public void deleteUser(UUID userId) {
         User user = userRepository.findById(userId)
