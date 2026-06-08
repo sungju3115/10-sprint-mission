@@ -20,6 +20,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class BasicChannelService implements ChannelService {
     private final UserMapper userMapper;
 
     // public Channel 생성
+    @CacheEvict(value = "channels", allEntries = true)
     @Transactional
     @Override
     public ChannelDTO createPublic(ChannelCreateRequestPublic request) {
@@ -61,6 +64,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
+    @CacheEvict(value = "channels", allEntries = true)
     @Transactional
     @Override
     public ChannelDTO createPrivate(ChannelCreateRequestPrivate request) {
@@ -110,6 +114,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 여기 로직 수정 필요 !!
+    @Cacheable(value = "channels", key = "#userID")
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDTO> findAllByUserID(UUID userID) {
@@ -149,6 +154,7 @@ public class BasicChannelService implements ChannelService {
                 .toList();
     }
 
+    @CacheEvict(value = "channels", allEntries = true)
     @Transactional
     @Override
     public ChannelDTO update(UUID channelID, ChannelUpdateRequest request) {
@@ -176,6 +182,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // channel 삭제
+    @CacheEvict(value = "channels", allEntries = true)
     @Transactional
     @Override
     public void deleteChannel(UUID channelId) {
