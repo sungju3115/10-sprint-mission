@@ -14,6 +14,8 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ public class BasicNotificationService implements NotificationService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
+    @CacheEvict(value = "notifications", key = "#request.receiverId()")
     @Transactional
     public NotificationDto create(NotificationCreateRequest request) {
         User user = userRepository.findById(request.receiverId())
@@ -44,6 +47,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
+    @Cacheable(value = "notifications", key = "#receiverId")
     public List<NotificationDto> findAll(UUID receiverId) {
         return notificationRepository.findAllByReceiverId(receiverId).stream()
                 .map(notificationMapper::toDto)
@@ -51,6 +55,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
+    @CacheEvict(value = "notifications", key = "#receiverId")
     @Transactional
     public void delete(UUID notificationId, UUID receiverId) {
         Notification notification = notificationRepository.findById(notificationId)
@@ -64,6 +69,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
+    @CacheEvict(value = "notifications", allEntries = true)
     @Transactional
     public void createMessageNotification(MessageCreatedEvent event) {
         // readStatus = true 조회
