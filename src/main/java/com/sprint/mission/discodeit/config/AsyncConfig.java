@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -16,6 +17,7 @@ import java.util.Map;
 @Configuration
 @EnableAsync
 @EnableRetry
+@EnableCaching
 public class AsyncConfig {
 
     @Bean
@@ -25,6 +27,18 @@ public class AsyncConfig {
         executor.setMaxPoolSize(20);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("async-");
+        executor.setTaskDecorator(new MdcTaskDecorator());
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean("eventTaskExecutor")
+    public TaskExecutor eventTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("event-");
         executor.setTaskDecorator(new MdcTaskDecorator());
         executor.initialize();
         return executor;
