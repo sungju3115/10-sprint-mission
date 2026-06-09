@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,6 +29,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EntityManager entityManager;
 
     @Transactional
     @Override
@@ -93,6 +95,8 @@ public class BasicBinaryContentService implements BinaryContentService {
                         .orElseThrow(() -> new BinaryContentNotFound(binaryContentId));
 
         binaryContentRepository.updateStatus(binaryContentId, status);
+        // DB에서 다시 로드
+        entityManager.refresh(binaryContent);
         return binaryContentMapper.toDTO(binaryContent);
     }
 }
