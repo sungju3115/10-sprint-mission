@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.response.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentStatusUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFound;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -97,6 +98,8 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.updateStatus(binaryContentId, status);
         // DB에서 다시 로드
         entityManager.refresh(binaryContent);
-        return binaryContentMapper.toDTO(binaryContent);
+        BinaryContentDTO result = binaryContentMapper.toDTO(binaryContent);
+        applicationEventPublisher.publishEvent(new BinaryContentStatusUpdatedEvent(result));
+        return result;
     }
 }
