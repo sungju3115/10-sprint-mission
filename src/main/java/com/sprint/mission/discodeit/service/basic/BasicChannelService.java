@@ -17,11 +17,15 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.event.ChannelCreatedEvent;
+import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +44,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // public Channel 생성
     @CacheEvict(value = "channels", allEntries = true)
@@ -59,8 +64,9 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         log.info("Public 채널 생성 성공 - channelId: {}", channel.getId());
-        // 초기 channel 생성 시 빈 리스트, null 반환해주는 게 맞을려나
-        return toChannelDTO(channel, new ArrayList<>(), null);
+        ChannelDTO result = toChannelDTO(channel, new ArrayList<>(), null);
+        applicationEventPublisher.publishEvent(new ChannelCreatedEvent(result));
+        return result;
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
@@ -89,8 +95,9 @@ public class BasicChannelService implements ChannelService {
         }
 
         log.info("Private 채널 생성 성공 - channelId: {}", channel.getId());
-        // 초기 생성 시에는 lastMessageAt은 null ??
-        return toChannelDTO(channel, userDtoList, null);
+        ChannelDTO result = toChannelDTO(channel, userDtoList, null);
+        applicationEventPublisher.publishEvent(new ChannelCreatedEvent(result));
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -178,7 +185,9 @@ public class BasicChannelService implements ChannelService {
         Instant lastMessageAt = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(channelID);
 
         log.info("채널 수정 성공 - channelId: {}", channel.getId());
-        return toChannelDTO(channel, participants, lastMessageAt);
+        ChannelDTO result = toChannelDTO(channel, participants, lastMessageAt);
+        applicationEventPublisher.publishEvent(new ChannelUpdatedEvent(result));
+        return result;
     }
 
     // channel 삭제
@@ -191,6 +200,7 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new ChannelNotFoundException(channelId));
         channelRepository.deleteById(channelId);
         log.info("채널 삭제 성공 - channelId: {}", channelId);
+        applicationEventPublisher.publishEvent(new ChannelDeletedEvent(channelId));
     }
 
     private ChannelDTO toChannelDTO(Channel channel, List<UserDTO> participants, Instant lastMessageAt) {
