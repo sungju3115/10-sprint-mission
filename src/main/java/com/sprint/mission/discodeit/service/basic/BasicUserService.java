@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.UserUpdatedEvent;
+import com.sprint.mission.discodeit.event.UserDeletedEvent;
 import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsEmailException;
 import com.sprint.mission.discodeit.exception.user.AlreadyExistsNameException;
@@ -56,7 +59,9 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
         log.info("사용자 생성 성공 - userId: {}", user.getId());
-        return userMapper.toDTO(user);
+        UserDTO result = userMapper.toDTO(user);
+        applicationEventPublisher.publishEvent(new UserCreatedEvent(result));
+        return result;
     }
 
     @Override
@@ -108,7 +113,9 @@ public class BasicUserService implements UserService {
         });
 
         log.info("사용자 수정 성공 - userId: {}", userID);
-        return userMapper.toDTO(user);
+        UserDTO result = userMapper.toDTO(user);
+        applicationEventPublisher.publishEvent(new UserUpdatedEvent(result));
+        return result;
     }
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X
@@ -121,6 +128,7 @@ public class BasicUserService implements UserService {
 
         userRepository.delete(user);
         log.info("사용자 삭제 성공 - userId: {}", userId);
+        applicationEventPublisher.publishEvent(new UserDeletedEvent(userId));
     }
 
     // User 이름 유효성 검증
