@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -31,6 +33,7 @@ public class BasicNotificationService implements NotificationService {
     private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
     private final ReadStatusRepository readStatusRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @CacheEvict(value = "notifications", key = "#request.receiverId()")
@@ -42,8 +45,9 @@ public class BasicNotificationService implements NotificationService {
         Notification notification = new Notification(user, request.title(), request.content());
 
         notificationRepository.save(notification);
-
-        return notificationMapper.toDto(notification);
+        NotificationDto result = notificationMapper.toDto(notification);
+        applicationEventPublisher.publishEvent(new NotificationCreatedEvent(result));
+        return result;
     }
 
     @Override
@@ -89,5 +93,8 @@ public class BasicNotificationService implements NotificationService {
                 .toList();
 
         notificationRepository.saveAll(notifications);
+        notifications.forEach(n ->
+            applicationEventPublisher.publishEvent(new NotificationCreatedEvent(notificationMapper.toDto(n)))
+        );
     }
 }
