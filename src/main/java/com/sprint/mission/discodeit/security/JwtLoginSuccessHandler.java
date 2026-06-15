@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.auth.JwtDto;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
+import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +22,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
+    private final SseService sseService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -43,5 +46,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getWriter(), new JwtDto(user, accessToken, refreshToken));
+
+        // 로그인 시 online=true로 SSE 브로드캐스트
+        UserDTO onlineUser = new UserDTO(user.id(), user.username(), user.email(), user.profile(), true, user.role());
+        sseService.broadcast("users.updated", onlineUser);
     }
 }
