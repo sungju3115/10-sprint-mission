@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                        .ignoringRequestMatchers("/ws/**")
                 )
                 // HTML 리다이렉트 방지
                 .exceptionHandling(exception -> exception
