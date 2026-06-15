@@ -1,4 +1,41 @@
 services:
+
+  # ── Reverse Proxy ──────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3000:80"                          # 외부에서 접근 가능한 유일한 컨테이너
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./src/main/resources/static:/usr/share/nginx/html   # 프론트엔드 정적 리소스
+    depends_on:
+      - app
+    networks:
+      - public
+      - backend
+
+  # ── Backend ────────────────────────────────────────────────
+  app:
+    build: .
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,kafka
+      DB_URL: jdbc:postgresql://db:5432/discodeit
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: broker:29092
+    volumes:
+      - binary_storage:/app/data/uploads
+    depends_on:
+      - db
+      - redis
+      - broker
+    networks:
+      - backend   # nginx와 통신
+      - data      # db, redis, broker와 통신
+
+  # ── DB ─────────────────────────────────────────────────────
   db:
     image: postgres:17
     environment:
@@ -8,23 +45,51 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data/
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-    ports:
-      - 5432:5432
+    networks:
+      - data      # 외부 인터넷 차단 (internal: true)
 
-  app:
-    build: .
-    ports:
-      - 80:80
-    env_file:
-      - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_URL: jdbc:postgresql://db:5432/discodeit
-      STORAGE_TYPE: ${STORAGE_TYPE}
+  # ── Memory DB ──────────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
     volumes:
-      - binary_storage:/app/data/uploads
-    depends_on:
-      - db
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - data      # 외부 인터넷 차단 (internal: true)
+
+  # ── Message Broker ─────────────────────────────────────────
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - data      # 외부 인터넷 차단 (internal: true)
+
+networks:
+  public:                  # nginx 전용 (외부 접근 가능)
+    driver: bridge
+  backend:                 # nginx ↔ app 통신
+    driver: bridge
+  data:                    # app ↔ db/redis/broker 통신 (인터넷 차단)
+    driver: bridge
+    internal: true
+
 volumes:
   postgres-data:
+  redis-data:
   binary_storage:
