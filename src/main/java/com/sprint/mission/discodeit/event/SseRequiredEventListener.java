@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.event;
 
+import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.SseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -7,6 +9,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -29,7 +32,15 @@ public class SseRequiredEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChannelCreated(ChannelCreatedEvent event) {
-        sseService.broadcast("channels.created", event.getChannelDTO());
+        ChannelDTO dto = event.getChannelDTO();
+        if (dto.type() == ChannelType.PRIVATE) {
+            List<UUID> participantIds = dto.participants().stream()
+                .map(user -> user.id())
+                .toList();
+            sseService.send(participantIds, "channels.created", dto);
+        } else {
+            sseService.broadcast("channels.created", dto);
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
