@@ -112,6 +112,14 @@ public class JwtTokenProvider {
         }
     }
 
+    public boolean validateAccessToken(String token) {
+        return validateToken(token);
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token);
+    }
+
     public String generateRefreshToken(UUID userId) {
         try {
             Instant now = Instant.now();
