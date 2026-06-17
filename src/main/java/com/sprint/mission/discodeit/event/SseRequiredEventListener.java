@@ -1,9 +1,13 @@
 package com.sprint.mission.discodeit.event;
 
 import com.sprint.mission.discodeit.dto.channel.response.ChannelDTO;
+import com.sprint.mission.discodeit.dto.user.response.UserDTO;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.SseService;
+import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -13,15 +17,18 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Profile("!kafka")
 public class SseRequiredEventListener {
+
     private final SseService sseService;
+    private final UserService userService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationCreated(NotificationCreatedEvent event) {
         sseService.send(
-            List.of(event.getNotificationDto().receiverId()),
-            "notifications.created",
-            event.getNotificationDto()
+                List.of(event.getNotificationDto().receiverId()),
+                "notifications.created",
+                event.getNotificationDto()
         );
     }
 
@@ -35,8 +42,8 @@ public class SseRequiredEventListener {
         ChannelDTO dto = event.getChannelDTO();
         if (dto.type() == ChannelType.PRIVATE) {
             List<UUID> participantIds = dto.participants().stream()
-                .map(user -> user.id())
-                .toList();
+                    .map(user -> user.id())
+                    .toList();
             sseService.send(participantIds, "channels.created", dto);
         } else {
             sseService.broadcast("channels.created", dto);
@@ -66,5 +73,16 @@ public class SseRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserDeleted(UserDeletedEvent event) {
         sseService.broadcast("users.deleted", event.getUserId());
+    }
+
+    // 로그인/로그아웃은 트랜잭션 외부에서 발행되므로 @EventListener 사용
+    @EventListener
+    public void handleUserLogInOut(UserLogInOutEvent event) {
+        UserDTO baseUser = userService.find(event.userId());
+        UserDTO statusUser = new UserDTO(
+                baseUser.id(), baseUser.username(), baseUser.email(),
+                baseUser.profile(), event.online(), baseUser.role()
+        );
+        sseService.broadcast("users.updated", statusUser);
     }
 }
