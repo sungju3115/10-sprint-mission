@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.StorageFailedEvent;
+import com.sprint.mission.discodeit.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -23,39 +21,99 @@ public class KafkaProduceRequiredEventListener {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
+    // ── 기존: 알림/역할/스토리지 ──────────────────────────────────
+
     @Async("eventTaskExecutor")
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
-        try {
-            String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
-            log.info("Kafka 발행 - discodeit.MessageCreatedEvent: messageId={}", event.getMessageId());
-        } catch (JsonProcessingException e) {
-            log.error("Kafka 직렬화 실패 - MessageCreatedEvent", e);
-        }
+        publish("discodeit.MessageCreatedEvent", event);
     }
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener
     public void on(RoleUpdatedEvent event) {
-        try {
-            String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
-            log.info("Kafka 발행 - discodeit.RoleUpdatedEvent: userId={}", event.getUserId());
-        } catch (JsonProcessingException e) {
-            log.error("Kafka 직렬화 실패 - RoleUpdatedEvent", e);
-        }
+        publish("discodeit.RoleUpdatedEvent", event);
     }
 
     @Async("eventTaskExecutor")
     @EventListener
     public void on(StorageFailedEvent event) {
+        publish("discodeit.S3UploadFailedEvent", event);
+    }
+
+    // ── 채널 SSE ─────────────────────────────────────────────────
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(ChannelCreatedEvent event) {
+        publishValue("discodeit.channels.created", event.getChannelDTO());
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(ChannelUpdatedEvent event) {
+        publishValue("discodeit.channels.updated", event.getChannelDTO());
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(ChannelDeletedEvent event) {
+        publishValue("discodeit.channels.deleted", event.getChannelId());
+    }
+
+    // ── 사용자 SSE ────────────────────────────────────────────────
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(UserCreatedEvent event) {
+        publishValue("discodeit.users.created", event.getUserDTO());
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(UserUpdatedEvent event) {
+        publishValue("discodeit.users.updated", event.getUserDTO());
+    }
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(UserDeletedEvent event) {
+        publishValue("discodeit.users.deleted", event.getUserId());
+    }
+
+    // ── 바이너리 콘텐츠 SSE ───────────────────────────────────────
+
+    @Async("eventTaskExecutor")
+    @TransactionalEventListener
+    public void on(BinaryContentStatusUpdatedEvent event) {
+        publishValue("discodeit.binaryContents.updated", event.getBinaryContentDTO());
+    }
+
+    // ── 로그인/로그아웃 (트랜잭션 외부 이벤트) ────────────────────
+
+    @Async("eventTaskExecutor")
+    @EventListener
+    public void on(UserLogInOutEvent event) {
+        publish("discodeit.users.loginout", event);
+    }
+
+    // ── 공통 직렬화 ───────────────────────────────────────────────
+
+    private void publish(String topic, Object payload) {
         try {
-            String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.S3UploadFailedEvent", payload);
-            log.info("Kafka 발행 - discodeit.S3UploadFailedEvent: title={}", event.getTitle());
+            kafkaTemplate.send(topic, objectMapper.writeValueAsString(payload));
+            log.debug("Kafka 발행 - topic: {}", topic);
         } catch (JsonProcessingException e) {
-            log.error("Kafka 직렬화 실패 - StorageFailedEvent", e);
+            log.error("Kafka 직렬화 실패 - topic: {}", topic, e);
+        }
+    }
+
+    private void publishValue(String topic, Object value) {
+        try {
+            kafkaTemplate.send(topic, objectMapper.writeValueAsString(value));
+            log.debug("Kafka 발행 - topic: {}", topic);
+        } catch (JsonProcessingException e) {
+            log.error("Kafka 직렬화 실패 - topic: {}", topic, e);
         }
     }
 }
