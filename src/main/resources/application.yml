@@ -1,6 +1,7 @@
 spring:
   application:
     name: discodeit
+    instance-id: ${random.uuid}
   profiles:
     active: dev,kafka
 
