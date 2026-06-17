@@ -34,6 +34,8 @@ services:
     networks:
       - backend   # nginx와 통신
       - data      # db, redis, broker와 통신
+    deploy:
+      replicas: 2   # 백엔드 인스턴스 2개로 수평 확장 (docker stack deploy 사용)
 
   # ── DB ─────────────────────────────────────────────────────
   db:
