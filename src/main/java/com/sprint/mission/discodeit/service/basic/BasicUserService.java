@@ -72,7 +72,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    @Cacheable(value = "users")
+    @Cacheable(value = "users", key = "'all'")
     @Transactional(readOnly = true)
     public List<UserDTO> findAll() {
         return userRepository.findAllWithProfileAndStatus().stream()
