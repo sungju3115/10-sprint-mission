@@ -12,6 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
+@org.springframework.context.annotation.Profile("!kafka")
 public class WebSocketRequiredEventListener {
 
     private final SimpMessagingTemplate template;
